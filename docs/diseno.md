@@ -70,6 +70,11 @@ classDiagram
         +eliminarDerrotados() List~Personaje~
         +esAccionDeApoyo(Personaje p, TipoAccion a) boolean
         +esHeroe(Personaje p) boolean
+        +registrarEspecialUsada(Personaje p) void
+        +turnosParaEspecial(Personaje p) int
+        +terminarTurno() void
+        +elegirAccionAlAzar(Personaje p) TipoAccion
+        +elegirObjetivoAlAzar(Personaje p, TipoAccion a) Personaje
         +verificarFinDelJuego() boolean
         +ganoElJugador() boolean
     }
@@ -95,7 +100,8 @@ classDiagram
     class ControladorBatalla {
         -GestorBatalla gestor
         -VentanaBatalla vista
-        +comenzar(GestorBatalla batalla, String introduccion) void
+        +comenzar(Supplier~GestorBatalla~ fabrica, String introduccion) void
+        +nuevaPartida() void
         +ejecutarTurno() void
         -realizarAccion(atacante, objetivo, accion) String
         -contraataque() void
@@ -155,6 +161,9 @@ sequenceDiagram
 | 5 | `GestorBatalla.accionesDisponibles` y `objetivosValidos` | La vista solo ofrece opciones legales, así desaparecen los casos de error en vez de validarlos después. |
 | 6 | `Random` se recibe por constructor en `GestorBatalla` | Permite pruebas con semilla fija para el contraataque. |
 | 8 | `ControladorBatalla.comenzar(...)` recibe la batalla en vez de crearla | El mismo controlador sirve para encadenar varios combates (campaña) sin cambios. |
+| 9 | La recarga de la especial vive en `GestorBatalla` (`Map<Personaje, Integer>`) | Es una regla de la batalla, no de la clase del personaje, y deja `IHabilidadEspecial` casi igual al enunciado. Tras usarla hay que esperar 2 turnos. |
+| 10 | El modelo decide la jugada del monstruo (`elegirAccionAlAzar`, `elegirObjetivoAlAzar`) | El controlador solo la ejecuta. Ataque normal casi siempre; especial el 30 % de las veces si está lista; quien cura elige al compañero más herido. |
+| 11 | `comenzar` recibe una fábrica (`Supplier<GestorBatalla>`) | Permite el botón "Nueva partida" sin que el controlador sepa cómo se arma un equipo. |
 | 7 | La vista trabaja con nombres (`String`), el controlador busca el objeto real | Es el paso 3 del enunciado. Exige nombres únicos por partida. |
 
 ## Dudas para resolver (algunas con el docente)
@@ -162,12 +171,11 @@ sequenceDiagram
 1. **Método extra en la interfaz**: `especialApuntaAAliado()` no aparece en el
    enunciado. Si el docente exige la interfaz con un único método, se mueve a
    `Personaje` o al gestor.
-2. **Monstruos con especial**: el enunciado solo pide un contraataque normal al
-   azar. Que usen su especial a veces sería un extra.
-3. **Librerías de apariencia**: el enunciado dice "puramente Java Swing". No se
+2. **Librerías de apariencia**: el enunciado dice "puramente Java Swing". No se
    usa ninguna externa salvo que el docente lo autorice.
-4. **Costo de la especial**: hoy se puede usar en todos los turnos. Un tiempo
-   de recarga o maná la haría una decisión táctica (extra opcional).
+3. **Extras frente al enunciado**: recarga de la especial y monstruos que a
+   veces la usan. Si el docente quiere el contraataque estrictamente normal,
+   basta con que `elegirAccionAlAzar` retorne siempre `ATAQUE_NORMAL`.
 
 ## Dudas ya resueltas
 

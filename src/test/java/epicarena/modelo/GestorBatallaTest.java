@@ -168,4 +168,74 @@ class GestorBatallaTest {
 
         assertTrue(gestor.verificarFinDelJuego());
     }
+
+    @Test
+    void laEspecialQuedaEnRecargaDosTurnos() {
+        gestor.registrarEspecialUsada(gandalf);
+        gestor.terminarTurno();
+
+        assertEquals(2, gestor.turnosParaEspecial(gandalf));
+        assertEquals(List.of(TipoAccion.ATAQUE_NORMAL), gestor.accionesDisponibles(gandalf));
+
+        gestor.terminarTurno();
+        assertEquals(1, gestor.turnosParaEspecial(gandalf));
+
+        gestor.terminarTurno();
+        assertEquals(0, gestor.turnosParaEspecial(gandalf));
+        assertTrue(gestor.accionesDisponibles(gandalf).contains(TipoAccion.HABILIDAD_ESPECIAL));
+    }
+
+    @Test
+    void laRecargaDeUnoNoAfectaALosDemas() {
+        gestor.registrarEspecialUsada(gandalf);
+
+        assertTrue(gestor.accionesDisponibles(elrond).contains(TipoAccion.HABILIDAD_ESPECIAL));
+        assertEquals(0, gestor.turnosParaEspecial(aragorn));
+    }
+
+    @Test
+    void quienNoTieneEspecialSiempreEligeElAtaqueNormal() {
+        for (int i = 0; i < 100; i++) {
+            assertEquals(TipoAccion.ATAQUE_NORMAL, gestor.elegirAccionAlAzar(orco));
+        }
+    }
+
+    @Test
+    void elEnemigoUsaSuEspecialSoloAVecesYNuncaEnRecarga() {
+        int especiales = 0;
+        for (int i = 0; i < 400; i++) {
+            if (gestor.elegirAccionAlAzar(nigromante) == TipoAccion.HABILIDAD_ESPECIAL) {
+                especiales++;
+            }
+        }
+        assertTrue(especiales > 60 && especiales < 180, "se esperaba cerca del 30%: " + especiales);
+
+        gestor.registrarEspecialUsada(nigromante);
+        for (int i = 0; i < 100; i++) {
+            assertEquals(TipoAccion.ATAQUE_NORMAL, gestor.elegirAccionAlAzar(nigromante));
+        }
+    }
+
+    @Test
+    void elSanadorNoGastaSuEspecialSiNadieEstaHerido() {
+        for (int i = 0; i < 100; i++) {
+            assertEquals(TipoAccion.ATAQUE_NORMAL, gestor.elegirAccionAlAzar(elrond));
+        }
+    }
+
+    @Test
+    void elSanadorEligeAlCompaneroMasHerido() {
+        aragorn.recibirDanoDirecto(30);
+        gandalf.recibirDanoDirecto(50);
+
+        assertSame(gandalf, gestor.elegirObjetivoAlAzar(elrond, TipoAccion.HABILIDAD_ESPECIAL));
+    }
+
+    @Test
+    void elObjetivoDeUnAtaqueEsSiempreUnRival() {
+        for (int i = 0; i < 50; i++) {
+            Personaje objetivo = gestor.elegirObjetivoAlAzar(orco, TipoAccion.ATAQUE_NORMAL);
+            assertTrue(gestor.getEquipoJugador().contains(objetivo));
+        }
+    }
 }

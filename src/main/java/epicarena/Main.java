@@ -17,7 +17,7 @@ public class Main {
     private static void iniciar() {
         VentanaBatalla ventana = new VentanaBatalla();
         ControladorBatalla controlador = new ControladorBatalla(ventana);
-        controlador.comenzar(crearBatalla(), "Los héroes entran en la arena. ¡Que comience la batalla!");
+        controlador.comenzar(Main::crearBatalla, "Los héroes entran en la arena. ¡Que comience la batalla!");
         ventana.setVisible(true);
     }
 

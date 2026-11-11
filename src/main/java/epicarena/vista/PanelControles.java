@@ -10,6 +10,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -26,6 +27,7 @@ class PanelControles extends JPanel {
     private final JLabel etiquetaObjetivo = crearEtiqueta("¿A quién ataca?");
     private final JLabel mensaje = new JLabel(" ", SwingConstants.CENTER);
     private final JButton botonTurno = new JButton("EJECUTAR TURNO");
+    private final JButton botonNuevaPartida = new JButton("Nueva partida");
 
     /** Evita avisar al controlador mientras la propia vista recarga las listas. */
     private boolean cargando;
@@ -49,7 +51,14 @@ class PanelControles extends JPanel {
 
         prepararBoton();
 
-        add(mensaje, BorderLayout.NORTH);
+        prepararBotonNuevaPartida();
+        JPanel cabecera = new JPanel(new BorderLayout());
+        cabecera.setOpaque(false);
+        cabecera.add(Box.createHorizontalStrut(botonNuevaPartida.getPreferredSize().width), BorderLayout.WEST);
+        cabecera.add(mensaje, BorderLayout.CENTER);
+        cabecera.add(botonNuevaPartida, BorderLayout.EAST);
+
+        add(cabecera, BorderLayout.NORTH);
         add(selectores, BorderLayout.CENTER);
         add(botonTurno, BorderLayout.SOUTH);
     }
@@ -88,6 +97,10 @@ class PanelControles extends JPanel {
 
     void alEjecutarTurno(ActionListener oyente) {
         botonTurno.addActionListener(oyente);
+    }
+
+    void alNuevaPartida(ActionListener oyente) {
+        botonNuevaPartida.addActionListener(oyente);
     }
 
     void alCambiarAtacante(ActionListener oyente) {
@@ -155,6 +168,18 @@ class PanelControles extends JPanel {
         combo.setPreferredSize(new Dimension(0, 34));
         combo.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         return combo;
+    }
+
+    private void prepararBotonNuevaPartida() {
+        botonNuevaPartida.setFont(Paleta.textoFuerte(13));
+        botonNuevaPartida.setForeground(Paleta.TEXTO);
+        botonNuevaPartida.setBackground(Paleta.PANEL_CLARO);
+        botonNuevaPartida.setOpaque(true);
+        botonNuevaPartida.setFocusPainted(false);
+        botonNuevaPartida.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Paleta.BORDE),
+                BorderFactory.createEmptyBorder(6, 14, 6, 14)));
+        botonNuevaPartida.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     private void prepararBoton() {

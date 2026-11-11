@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 /**
@@ -88,6 +89,16 @@ public class VentanaBatalla extends JFrame {
 
     public void alEjecutarTurno(ActionListener oyente) {
         panelControles.alEjecutarTurno(oyente);
+    }
+
+    public void alNuevaPartida(ActionListener oyente) {
+        panelControles.alNuevaPartida(oyente);
+    }
+
+    /** Pregunta al jugador y retorna true si acepta. */
+    public boolean confirmar(String pregunta) {
+        return JOptionPane.showConfirmDialog(this, pregunta, "Epic Arena",
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION;
     }
 
     public void alCambiarAtacante(ActionListener oyente) {

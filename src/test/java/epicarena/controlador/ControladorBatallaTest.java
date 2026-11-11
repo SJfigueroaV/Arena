@@ -39,7 +39,7 @@ class ControladorBatallaTest {
             gestor.agregarEnemigo(new Mago("Nigromante", 70, 26, 1));
             vista = new VentanaBatalla();
             controlador = new ControladorBatalla(vista);
-            controlador.comenzar(gestor, "Inicio");
+            controlador.comenzar(() -> gestor, "Inicio");
         });
     }
 
@@ -92,7 +92,7 @@ class ControladorBatallaTest {
             GestorBatalla sinEnemigos = new GestorBatalla();
             sinEnemigos.agregarHeroe(new Guerrero("Solo", 50, 10, 0));
 
-            controlador.comenzar(sinEnemigos, "Arena vacía");
+            controlador.comenzar(() -> sinEnemigos, "Arena vacía");
 
             assertNull(vista.getObjetivoSeleccionado());
             assertDoesNotThrow(() -> controlador.ejecutarTurno());
@@ -106,11 +106,34 @@ class ControladorBatallaTest {
             otra.agregarHeroe(new Guerrero("Boromir", 100, 25, 4));
             otra.agregarEnemigo(new Guerrero("Uruk", 60, 15, 2));
 
-            controlador.comenzar(otra, "Segunda batalla");
+            controlador.comenzar(() -> otra, "Segunda batalla");
             controlador.ejecutarTurno();
 
             assertEquals("Boromir", vista.getAtacanteSeleccionado());
             assertEquals(60 - (25 - 2), otra.buscarPorNombre("Uruk").getPuntosDeVida());
+        });
+    }
+
+    @Test
+    void nuevaPartidaCreaUnaBatallaDesdeCero() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            int[] creadas = {0};
+            GestorBatalla[] ultima = new GestorBatalla[1];
+            controlador.comenzar(() -> {
+                creadas[0]++;
+                GestorBatalla batalla = new GestorBatalla(new Random(5));
+                batalla.agregarHeroe(new Guerrero("Boromir", 100, 25, 4));
+                batalla.agregarEnemigo(new Guerrero("Uruk", 60, 15, 2));
+                ultima[0] = batalla;
+                return batalla;
+            }, "Inicio");
+            controlador.ejecutarTurno();
+
+            controlador.nuevaPartida();
+
+            assertEquals(2, creadas[0]);
+            assertEquals(60, ultima[0].buscarPorNombre("Uruk").getPuntosDeVida());
+            assertEquals("Boromir", vista.getAtacanteSeleccionado());
         });
     }
 }

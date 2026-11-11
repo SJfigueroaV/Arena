@@ -7,6 +7,7 @@ import epicarena.modelo.TipoAccion;
 import epicarena.vista.VentanaBatalla;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Arbitro de la partida: traduce los clics de la vista en jugadas del modelo
@@ -15,19 +16,35 @@ import java.util.List;
 public class ControladorBatalla {
 
     private final VentanaBatalla vista;
+    private Supplier<GestorBatalla> fabricaDeBatallas;
+    private String introduccion;
     private GestorBatalla gestor;
     private int turno;
 
     public ControladorBatalla(VentanaBatalla vista) {
         this.vista = vista;
         vista.alEjecutarTurno(evento -> ejecutarTurno());
+        vista.alNuevaPartida(evento -> pedirNuevaPartida());
         vista.alCambiarAtacante(evento -> actualizarAcciones());
         vista.alCambiarAccion(evento -> actualizarObjetivos());
     }
 
-    /** Arranca una batalla. Se puede llamar de nuevo con otros equipos. */
-    public void comenzar(GestorBatalla nuevaBatalla, String introduccion) {
-        gestor = nuevaBatalla;
+    /**
+     * Arranca una batalla. Recibe una fabrica en lugar de la batalla ya armada
+     * para poder crearla de nuevo cuando el jugador pida otra partida.
+     */
+    public void comenzar(Supplier<GestorBatalla> fabricaDeBatallas, String introduccion) {
+        this.fabricaDeBatallas = fabricaDeBatallas;
+        this.introduccion = introduccion;
+        nuevaPartida();
+    }
+
+    /** Descarta la batalla actual y empieza otra desde cero. */
+    public void nuevaPartida() {
+        if (fabricaDeBatallas == null) {
+            return;
+        }
+        gestor = fabricaDeBatallas.get();
         turno = 0;
         vista.limpiarHistorial();
         vista.agregarAlHistorial(introduccion);
@@ -35,8 +52,13 @@ public class ControladorBatalla {
         sincronizarVista();
         if (gestor.verificarFinDelJuego()) {
             terminarPartida();
-        } else {
-            vista.mostrarMensaje("Elige tu jugada");
+        }
+    }
+
+    private void pedirNuevaPartida() {
+        boolean enCurso = gestor != null && turno > 0 && !gestor.verificarFinDelJuego();
+        if (!enCurso || vista.confirmar("¿Abandonar la batalla actual y empezar otra?")) {
+            nuevaPartida();
         }
     }
 
@@ -54,9 +76,11 @@ public class ControladorBatalla {
             vista.mostrarMensaje("Selecciona quién actúa, la acción y el objetivo");
             return;
         }
-        if (!gestor.esHeroe(atacante) || !gestor.objetivosValidos(atacante, accion).contains(objetivo)) {
-            vista.mostrarMensaje("Esa jugada no es válida");
+        if (!gestor.esHeroe(atacante)
+                || !gestor.accionesDisponibles(atacante).contains(accion)
+                || !gestor.objetivosValidos(atacante, accion).contains(objetivo)) {
             sincronizarVista();
+            vista.mostrarMensaje("Esa jugada no es válida");
             return;
         }
 
@@ -68,10 +92,8 @@ public class ControladorBatalla {
         }
 
         contraataque();
-        if (cerrarJugada()) {
-            return;
-        }
-        vista.mostrarMensaje("Elige tu jugada");
+        gestor.terminarTurno();
+        cerrarJugada();
     }
 
     /**
@@ -80,19 +102,24 @@ public class ControladorBatalla {
      */
     private String realizarAccion(Personaje atacante, Personaje objetivo, TipoAccion accion) {
         if (accion == TipoAccion.HABILIDAD_ESPECIAL && atacante instanceof IHabilidadEspecial habilidad) {
+            gestor.registrarEspecialUsada(atacante);
             return habilidad.ejecutarEspecial(objetivo);
         }
         return atacante.atacar(objetivo);
     }
 
-    /** Un monstruo al azar ataca a un heroe al azar. */
+    /** Un monstruo al azar responde; el modelo decide su jugada y su objetivo. */
     private void contraataque() {
         Personaje monstruo = gestor.elegirEnemigoAlAzar();
-        Personaje heroe = gestor.elegirHeroeAlAzar();
-        if (monstruo == null || heroe == null) {
+        if (monstruo == null) {
             return;
         }
-        vista.agregarAlHistorial(monstruo.atacar(heroe));
+        TipoAccion accion = gestor.elegirAccionAlAzar(monstruo);
+        Personaje objetivo = gestor.elegirObjetivoAlAzar(monstruo, accion);
+        if (objetivo == null) {
+            return;
+        }
+        vista.agregarAlHistorial(realizarAccion(monstruo, objetivo, accion));
     }
 
     /**
@@ -131,6 +158,7 @@ public class ControladorBatalla {
     private void actualizarAcciones() {
         Personaje atacante = gestor.buscarPorNombre(vista.getAtacanteSeleccionado());
         vista.cargarAcciones(gestor.accionesDisponibles(atacante));
+        vista.mostrarMensaje(mensajeDeJugada(atacante));
         actualizarObjetivos();
     }
 
@@ -140,6 +168,15 @@ public class ControladorBatalla {
         TipoAccion accion = vista.getAccionSeleccionada();
         vista.cargarObjetivos(nombres(gestor.objetivosValidos(atacante, accion)));
         vista.setTextoObjetivo(gestor.esAccionDeApoyo(atacante, accion) ? "¿A quién ayuda?" : "¿A quién ataca?");
+    }
+
+    private String mensajeDeJugada(Personaje atacante) {
+        int espera = gestor.turnosParaEspecial(atacante);
+        if (espera == 0) {
+            return "Elige tu jugada";
+        }
+        return "La habilidad especial de " + atacante.getNombre() + " estará lista en "
+                + espera + (espera == 1 ? " turno" : " turnos");
     }
 
     private List<String> nombres(List<Personaje> equipo) {
