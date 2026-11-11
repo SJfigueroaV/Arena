@@ -68,6 +68,8 @@ classDiagram
         +elegirEnemigoAlAzar() Personaje
         +elegirHeroeAlAzar() Personaje
         +eliminarDerrotados() List~Personaje~
+        +esAccionDeApoyo(Personaje p, TipoAccion a) boolean
+        +esHeroe(Personaje p) boolean
         +verificarFinDelJuego() boolean
         +ganoElJugador() boolean
     }
@@ -82,16 +84,22 @@ classDiagram
         +getObjetivoSeleccionado() String
         +getAccionSeleccionada() TipoAccion
         +alEjecutarTurno(ActionListener l) void
-        +alCambiarSeleccion(ActionListener l) void
+        +setTextoObjetivo(String texto) void
+        +mostrarMensaje(String texto) void
+        +alCambiarAtacante(ActionListener l) void
+        +alCambiarAccion(ActionListener l) void
         +bloquearControles() void
+        +desbloquearControles() void
     }
 
     class ControladorBatalla {
         -GestorBatalla gestor
         -VentanaBatalla vista
-        +iniciar() void
-        -ejecutarTurno() void
+        +comenzar(GestorBatalla batalla, String introduccion) void
+        +ejecutarTurno() void
+        -realizarAccion(atacante, objetivo, accion) String
         -contraataque() void
+        -cerrarJugada() boolean
         -sincronizarVista() void
     }
 
@@ -146,6 +154,7 @@ sequenceDiagram
 | 4 | `especialApuntaAAliado()` en `IHabilidadEspecial` | La especial del Sacerdote va a un compañero, así que el desplegable de objetivos debe cambiar de equipo sin que nadie pregunte "¿es Sacerdote?". |
 | 5 | `GestorBatalla.accionesDisponibles` y `objetivosValidos` | La vista solo ofrece opciones legales, así desaparecen los casos de error en vez de validarlos después. |
 | 6 | `Random` se recibe por constructor en `GestorBatalla` | Permite pruebas con semilla fija para el contraataque. |
+| 8 | `ControladorBatalla.comenzar(...)` recibe la batalla en vez de crearla | El mismo controlador sirve para encadenar varios combates (campaña) sin cambios. |
 | 7 | La vista trabaja con nombres (`String`), el controlador busca el objeto real | Es el paso 3 del enunciado. Exige nombres únicos por partida. |
 
 ## Dudas para resolver (algunas con el docente)

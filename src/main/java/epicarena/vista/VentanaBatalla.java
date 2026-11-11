@@ -102,4 +102,9 @@ public class VentanaBatalla extends JFrame {
     public void bloquearControles() {
         panelControles.bloquear();
     }
+
+    /** Vuelve a activar los controles al comenzar una batalla nueva. */
+    public void desbloquearControles() {
+        panelControles.desbloquear();
+    }
 }

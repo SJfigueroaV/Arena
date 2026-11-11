@@ -91,10 +91,18 @@ public class GestorBatalla {
         List<Personaje> aliados = esHeroe ? equipoJugador : equipoEnemigo;
         List<Personaje> rivales = esHeroe ? equipoEnemigo : equipoJugador;
 
-        boolean apoyaAliados = accion == TipoAccion.HABILIDAD_ESPECIAL
+        return new ArrayList<>(esAccionDeApoyo(actor, accion) ? aliados : rivales);
+    }
+
+    /** Indica si la accion se aplica sobre un companero en lugar de un rival. */
+    public boolean esAccionDeApoyo(Personaje actor, TipoAccion accion) {
+        return accion == TipoAccion.HABILIDAD_ESPECIAL
                 && actor instanceof IHabilidadEspecial habilidad
                 && habilidad.especialApuntaAAliado();
-        return new ArrayList<>(apoyaAliados ? aliados : rivales);
+    }
+
+    public boolean esHeroe(Personaje personaje) {
+        return equipoJugador.contains(personaje);
     }
 
     /** Retorna null si ya no quedan enemigos. */

@@ -115,6 +115,15 @@ class PanelControles extends JPanel {
         botonTurno.setBackground(Paleta.BOTON_APAGADO);
     }
 
+    void desbloquear() {
+        bloqueado = false;
+        comboAtacante.setEnabled(comboAtacante.getItemCount() > 0);
+        comboAccion.setEnabled(comboAccion.getItemCount() > 0);
+        comboObjetivo.setEnabled(comboObjetivo.getItemCount() > 0);
+        botonTurno.setEnabled(true);
+        botonTurno.setBackground(Paleta.BOTON);
+    }
+
     /** Cambia el contenido conservando la seleccion anterior si todavia existe. */
     private <T> void recargar(JComboBox<T> combo, List<T> elementos) {
         Object anterior = combo.getSelectedItem();
