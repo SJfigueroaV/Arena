@@ -26,5 +26,6 @@ src/main/java/epicarena/
 ├── controlador/   Árbitro del turno
 └── Main.java
 src/test/java/epicarena/          Pruebas del modelo, la campaña y el controlador
-docs/              Enunciado, rúbrica, diseño (UML), guion y guía de arte
+docs/              Enunciado, rúbrica, diseño (UML) y guion
+docs/arte/         Guía de pixel art y paleta de colores
 ```
