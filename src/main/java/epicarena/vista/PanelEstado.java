@@ -24,6 +24,7 @@ class PanelEstado extends JPanel {
 
     private final ModeloTablaPersonajes modeloHeroes = new ModeloTablaPersonajes();
     private final ModeloTablaPersonajes modeloMonstruos = new ModeloTablaPersonajes();
+    private final JLabel subtitulo = new JLabel(" ", SwingConstants.CENTER);
 
     PanelEstado() {
         super(new BorderLayout(0, 10));
@@ -32,13 +33,25 @@ class PanelEstado extends JPanel {
         JLabel titulo = new JLabel("EPIC ARENA", SwingConstants.CENTER);
         titulo.setFont(Paleta.titulo(34));
         titulo.setForeground(Paleta.DORADO);
-        add(titulo, BorderLayout.NORTH);
+
+        subtitulo.setFont(Paleta.titulo(16).deriveFont(java.awt.Font.ITALIC));
+        subtitulo.setForeground(Paleta.TEXTO_SUAVE);
+
+        JPanel cabecera = new JPanel(new GridLayout(2, 1, 0, 2));
+        cabecera.setOpaque(false);
+        cabecera.add(titulo);
+        cabecera.add(subtitulo);
+        add(cabecera, BorderLayout.NORTH);
 
         JPanel tablas = new JPanel(new GridLayout(1, 2, 14, 0));
         tablas.setOpaque(false);
         tablas.add(crearSeccion("HÉROES", Paleta.HEROES, modeloHeroes));
         tablas.add(crearSeccion("MONSTRUOS", Paleta.MONSTRUOS, modeloMonstruos));
         add(tablas, BorderLayout.CENTER);
+    }
+
+    void setSubtitulo(String texto) {
+        subtitulo.setText(texto == null || texto.isBlank() ? " " : texto);
     }
 
     void mostrarEquipos(List<Personaje> heroes, List<Personaje> monstruos) {
@@ -53,7 +66,7 @@ class PanelEstado extends JPanel {
 
         JTable tabla = new JTable(modelo);
         tabla.setRowHeight(ALTO_FILA);
-        tabla.setFont(Paleta.texto(14));
+        tabla.setFont(Paleta.texto(13));
         tabla.setBackground(Paleta.PANEL);
         tabla.setForeground(Paleta.TEXTO);
         tabla.setShowGrid(false);
@@ -70,11 +83,11 @@ class PanelEstado extends JPanel {
         tabla.getColumnModel().getColumn(ModeloTablaPersonajes.COLUMNA_VIDA).setCellRenderer(new BarraVida());
         tabla.getColumnModel().getColumn(3).setCellRenderer(celdaCentrada);
         tabla.getColumnModel().getColumn(4).setCellRenderer(celdaCentrada);
-        tabla.getColumnModel().getColumn(0).setPreferredWidth(120);
-        tabla.getColumnModel().getColumn(1).setPreferredWidth(115);
-        tabla.getColumnModel().getColumn(ModeloTablaPersonajes.COLUMNA_VIDA).setPreferredWidth(140);
-        tabla.getColumnModel().getColumn(3).setPreferredWidth(48);
-        tabla.getColumnModel().getColumn(4).setPreferredWidth(48);
+        tabla.getColumnModel().getColumn(0).setPreferredWidth(185);
+        tabla.getColumnModel().getColumn(1).setPreferredWidth(88);
+        tabla.getColumnModel().getColumn(ModeloTablaPersonajes.COLUMNA_VIDA).setPreferredWidth(120);
+        tabla.getColumnModel().getColumn(3).setPreferredWidth(38);
+        tabla.getColumnModel().getColumn(4).setPreferredWidth(38);
 
         JTableHeader encabezado = tabla.getTableHeader();
         encabezado.setBackground(Paleta.PANEL_CLARO);

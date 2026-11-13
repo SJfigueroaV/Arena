@@ -97,7 +97,7 @@ class PersonajeTest {
 
         String narrativa = guerrero.atacar(orco);
 
-        assertTrue(narrativa.contains("derrotado"));
+        assertTrue(narrativa.contains("Orco cae"));
     }
 
     @Test
@@ -163,5 +163,30 @@ class PersonajeTest {
         assertEquals(80, objetivoDelGuerrero.getPuntosDeVida());
         assertEquals(90, objetivoDelMago.getPuntosDeVida());
         assertEquals(88, objetivoDelSacerdote.getPuntosDeVida());
+    }
+
+    @Test
+    void losNombresConArticuloSeAcomodanALaFrase() {
+        assertEquals("al Mohán", new Mago("El Mohán", 10, 1, 0).comoObjetivo());
+        assertEquals("a la Patasola", new Guerrero("La Patasola", 10, 1, 0).comoObjetivo());
+        assertEquals("a Tyba", new Guerrero("Tyba", 10, 1, 0).comoObjetivo());
+        assertEquals("el Mohán", new Mago("El Mohán", 10, 1, 0).enFrase());
+    }
+
+    @Test
+    void cadaPersonajeNarraConSuPropioVerbo() {
+        Personaje caiman = new Guerrero("El Hombre Caimán", 100, 20, 0, "muerde");
+        Personaje tyba = new Guerrero("Tyba", 100, 20, 0);
+
+        assertEquals("¡El Hombre Caimán muerde a Tyba por 20 puntos de daño!", caiman.atacar(tyba));
+        assertEquals("¡Tyba golpea al Hombre Caimán por 20 puntos de daño!", tyba.atacar(caiman));
+    }
+
+    @Test
+    void elSacerdoteNarraDistintoCuandoSeCuraASiMismo() {
+        Sacerdote sua = new Sacerdote("Sua", 90, 16, 0, "golpea con su bastón", "el Calor de Sué");
+        sua.recibirDanoDirecto(50);
+
+        assertEquals("¡Sua invoca el Calor de Sué y recupera 32 puntos de vida!", sua.ejecutarEspecial(sua));
     }
 }

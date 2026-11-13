@@ -45,7 +45,8 @@ Cada punto se debe poder demostrar en el código o ejecutando el juego.
 
 ## Cómo se comprueba
 
-- `./mvnw test` corre 44 pruebas: reglas del modelo, partidas completas con la
-  ventana real y dos reglas de arquitectura (modelo sin Swing y sin
-  `instanceof` de clases concretas).
-- Revisión manual: jugar una partida hasta el final y otra con "Nueva partida".
+- `./mvnw test` corre 54 pruebas: reglas del modelo, la campaña, partidas
+  completas con la ventana real y dos reglas de arquitectura (modelo sin
+  Swing y sin `instanceof` de clases concretas).
+- Revisión manual: superar una etapa, pasar a la siguiente, perder una y
+  reintentarla.

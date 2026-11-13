@@ -1,5 +1,7 @@
 package epicarena.controlador;
 
+import epicarena.modelo.Campana;
+import epicarena.modelo.Etapa;
 import epicarena.modelo.GestorBatalla;
 import epicarena.modelo.IHabilidadEspecial;
 import epicarena.modelo.Personaje;
@@ -7,7 +9,6 @@ import epicarena.modelo.TipoAccion;
 import epicarena.vista.VentanaBatalla;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * Arbitro de la partida: traduce los clics de la vista en jugadas del modelo
@@ -15,56 +16,76 @@ import java.util.function.Supplier;
  */
 public class ControladorBatalla {
 
+    private enum Estado { EN_BATALLA, ETAPA_SUPERADA, DERROTA, CAMPANA_COMPLETA }
+
     private final VentanaBatalla vista;
-    private Supplier<GestorBatalla> fabricaDeBatallas;
-    private String introduccion;
+    private Campana campana;
     private GestorBatalla gestor;
+    private Estado estado;
     private int turno;
 
     public ControladorBatalla(VentanaBatalla vista) {
         this.vista = vista;
         vista.alEjecutarTurno(evento -> ejecutarTurno());
-        vista.alNuevaPartida(evento -> pedirNuevaPartida());
+        vista.alBotonSecundario(evento -> pedirAccionSecundaria());
         vista.alCambiarAtacante(evento -> actualizarAcciones());
         vista.alCambiarAccion(evento -> actualizarObjetivos());
     }
 
-    /**
-     * Arranca una batalla. Recibe una fabrica en lugar de la batalla ya armada
-     * para poder crearla de nuevo cuando el jugador pida otra partida.
-     */
-    public void comenzar(Supplier<GestorBatalla> fabricaDeBatallas, String introduccion) {
-        this.fabricaDeBatallas = fabricaDeBatallas;
-        this.introduccion = introduccion;
-        nuevaPartida();
+    /** Empieza la campana desde su primera etapa. */
+    public void comenzar(Campana nuevaCampana) {
+        campana = nuevaCampana;
+        campana.reiniciar();
+        iniciarEtapa();
     }
 
-    /** Descarta la batalla actual y empieza otra desde cero. */
-    public void nuevaPartida() {
-        if (fabricaDeBatallas == null) {
-            return;
-        }
-        gestor = fabricaDeBatallas.get();
+    /** Arma la batalla de la etapa actual desde cero y la muestra. */
+    private void iniciarEtapa() {
+        Etapa etapa = campana.etapaActual();
+        gestor = etapa.crearBatalla();
         turno = 0;
+        estado = Estado.EN_BATALLA;
+
+        String posicion = "Etapa " + campana.numeroDeEtapa() + " de " + campana.totalDeEtapas();
+        vista.setSubtitulo(campana.getNombre() + "  ·  " + posicion + ": " + etapa.getTitulo());
         vista.limpiarHistorial();
-        vista.agregarAlHistorial(introduccion);
+        vista.agregarAlHistorial(posicion.toUpperCase() + " — " + etapa.getTitulo().toUpperCase());
+        vista.agregarAlHistorial(etapa.getIntroduccion());
         vista.desbloquearControles();
+        vista.configurarBotonSecundario("Reiniciar campaña", false);
         sincronizarVista();
         if (gestor.verificarFinDelJuego()) {
-            terminarPartida();
+            terminarBatalla();
         }
     }
 
-    private void pedirNuevaPartida() {
-        boolean enCurso = gestor != null && turno > 0 && !gestor.verificarFinDelJuego();
-        if (!enCurso || vista.confirmar("¿Abandonar la batalla actual y empezar otra?")) {
-            nuevaPartida();
+    /**
+     * Lo que hace el boton pequeno segun el momento: pasar a la etapa
+     * siguiente, reintentar la que se perdio o volver a empezar la campana.
+     */
+    public void accionSecundaria() {
+        if (campana == null) {
+            return;
         }
+        if (estado == Estado.ETAPA_SUPERADA) {
+            campana.avanzar();
+        } else if (estado != Estado.DERROTA) {
+            campana.reiniciar();
+        }
+        iniciarEtapa();
+    }
+
+    private void pedirAccionSecundaria() {
+        if (estado == Estado.EN_BATALLA
+                && !vista.confirmar("¿Abandonar el viaje y volver a la primera etapa?")) {
+            return;
+        }
+        accionSecundaria();
     }
 
     /** Un turno completo: la jugada del jugador y el contraataque de un monstruo. */
     public void ejecutarTurno() {
-        if (gestor == null || gestor.verificarFinDelJuego()) {
+        if (gestor == null || estado != Estado.EN_BATALLA) {
             return;
         }
 
@@ -131,20 +152,32 @@ public class ControladorBatalla {
         gestor.eliminarDerrotados();
         sincronizarVista();
         if (gestor.verificarFinDelJuego()) {
-            terminarPartida();
+            terminarBatalla();
             return true;
         }
         return false;
     }
 
-    private void terminarPartida() {
+    /** Cierra la batalla y deja listo el paso siguiente de la campana. */
+    private void terminarBatalla() {
         vista.bloquearControles();
-        if (gestor.ganoElJugador()) {
-            vista.agregarAlHistorial("¡VICTORIA! Los héroes dominan la arena.");
-            vista.mostrarMensaje("¡VICTORIA!");
-        } else {
-            vista.agregarAlHistorial("DERROTA. Los monstruos se alzan sobre los héroes caídos.");
+        if (!gestor.ganoElJugador()) {
+            estado = Estado.DERROTA;
+            vista.agregarAlHistorial(campana.getTextoDeDerrota());
             vista.mostrarMensaje("DERROTA");
+            vista.configurarBotonSecundario("Reintentar etapa", true);
+            return;
+        }
+        vista.agregarAlHistorial(campana.etapaActual().getCierre());
+        if (campana.hayMasEtapas()) {
+            estado = Estado.ETAPA_SUPERADA;
+            vista.mostrarMensaje("¡Etapa superada!");
+            vista.configurarBotonSecundario("Siguiente etapa", true);
+        } else {
+            estado = Estado.CAMPANA_COMPLETA;
+            vista.agregarAlHistorial(campana.getEpilogo());
+            vista.mostrarMensaje("¡VICTORIA!");
+            vista.configurarBotonSecundario("Jugar de nuevo", true);
         }
     }
 

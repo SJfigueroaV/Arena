@@ -69,9 +69,31 @@ public abstract class Personaje implements ICurable {
         puntosDeVida = Math.min(puntosDeVidaMaximos, puntosDeVida + cantidad);
     }
 
+    /** Narra un golpe: "¡Tyba golpea al Mohán por 20 puntos de daño!". */
+    protected String narrarGolpe(String verbo, Personaje enemigo, int dano) {
+        return "¡" + nombre + " " + verbo + " " + enemigo.comoObjetivo()
+                + " por " + dano + " puntos de daño!" + remate(enemigo);
+    }
+
     /** Texto que se agrega a la narrativa cuando el golpe derrota al rival. */
     protected String remate(Personaje enemigo) {
-        return enemigo.estaVivo() ? "" : " ¡" + enemigo.getNombre() + " ha sido derrotado!";
+        return enemigo.estaVivo() ? "" : " ¡" + enemigo.getNombre() + " cae!";
+    }
+
+    /** El nombre dentro de una frase: "la Patasola", "el Mohán", "Tyba". */
+    public String enFrase() {
+        if (nombre.startsWith("El ") || nombre.startsWith("La ")) {
+            return nombre.substring(0, 1).toLowerCase() + nombre.substring(1);
+        }
+        return nombre;
+    }
+
+    /** El nombre como destino de una accion: "al Mohán", "a la Patasola", "a Tyba". */
+    public String comoObjetivo() {
+        if (nombre.startsWith("El ")) {
+            return "al " + nombre.substring(3);
+        }
+        return "a " + enFrase();
     }
 
     public String getNombre() {

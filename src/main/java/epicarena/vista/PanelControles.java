@@ -27,7 +27,9 @@ class PanelControles extends JPanel {
     private final JLabel etiquetaObjetivo = crearEtiqueta("¿A quién ataca?");
     private final JLabel mensaje = new JLabel(" ", SwingConstants.CENTER);
     private final JButton botonTurno = new JButton("EJECUTAR TURNO");
-    private final JButton botonNuevaPartida = new JButton("Nueva partida");
+    private final JButton botonSecundario = new JButton("Reiniciar");
+
+    private static final int ANCHO_BOTON_SECUNDARIO = 190;
 
     /** Evita avisar al controlador mientras la propia vista recarga las listas. */
     private boolean cargando;
@@ -51,12 +53,12 @@ class PanelControles extends JPanel {
 
         prepararBoton();
 
-        prepararBotonNuevaPartida();
+        prepararBotonSecundario();
         JPanel cabecera = new JPanel(new BorderLayout());
         cabecera.setOpaque(false);
-        cabecera.add(Box.createHorizontalStrut(botonNuevaPartida.getPreferredSize().width), BorderLayout.WEST);
+        cabecera.add(Box.createHorizontalStrut(ANCHO_BOTON_SECUNDARIO), BorderLayout.WEST);
         cabecera.add(mensaje, BorderLayout.CENTER);
-        cabecera.add(botonNuevaPartida, BorderLayout.EAST);
+        cabecera.add(botonSecundario, BorderLayout.EAST);
 
         add(cabecera, BorderLayout.NORTH);
         add(selectores, BorderLayout.CENTER);
@@ -99,8 +101,15 @@ class PanelControles extends JPanel {
         botonTurno.addActionListener(oyente);
     }
 
-    void alNuevaPartida(ActionListener oyente) {
-        botonNuevaPartida.addActionListener(oyente);
+    void alBotonSecundario(ActionListener oyente) {
+        botonSecundario.addActionListener(oyente);
+    }
+
+    /** Cambia el texto del boton pequeno; destacado lo pinta en dorado para invitar al clic. */
+    void configurarBotonSecundario(String texto, boolean destacado) {
+        botonSecundario.setText(texto);
+        botonSecundario.setBackground(destacado ? Paleta.DORADO : Paleta.PANEL_CLARO);
+        botonSecundario.setForeground(destacado ? Paleta.FONDO : Paleta.TEXTO);
     }
 
     void alCambiarAtacante(ActionListener oyente) {
@@ -170,16 +179,14 @@ class PanelControles extends JPanel {
         return combo;
     }
 
-    private void prepararBotonNuevaPartida() {
-        botonNuevaPartida.setFont(Paleta.textoFuerte(13));
-        botonNuevaPartida.setForeground(Paleta.TEXTO);
-        botonNuevaPartida.setBackground(Paleta.PANEL_CLARO);
-        botonNuevaPartida.setOpaque(true);
-        botonNuevaPartida.setFocusPainted(false);
-        botonNuevaPartida.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Paleta.BORDE),
-                BorderFactory.createEmptyBorder(6, 14, 6, 14)));
-        botonNuevaPartida.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    private void prepararBotonSecundario() {
+        botonSecundario.setFont(Paleta.textoFuerte(13));
+        botonSecundario.setOpaque(true);
+        botonSecundario.setFocusPainted(false);
+        botonSecundario.setBorder(BorderFactory.createLineBorder(Paleta.BORDE));
+        botonSecundario.setPreferredSize(new Dimension(ANCHO_BOTON_SECUNDARIO, 32));
+        botonSecundario.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        configurarBotonSecundario(botonSecundario.getText(), false);
     }
 
     private void prepararBoton() {

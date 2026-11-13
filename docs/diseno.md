@@ -97,11 +97,37 @@ classDiagram
         +desbloquearControles() void
     }
 
+    class Etapa {
+        -String titulo
+        -String introduccion
+        -String cierre
+        -Supplier~GestorBatalla~ fabricaDeBatalla
+        +crearBatalla() GestorBatalla
+    }
+
+    class Campana {
+        -String nombre
+        -String epilogo
+        -String textoDeDerrota
+        -List~Etapa~ etapas
+        -int indiceActual
+        +agregarEtapa(Etapa e) void
+        +etapaActual() Etapa
+        +hayMasEtapas() boolean
+        +avanzar() void
+        +reiniciar() void
+    }
+
+    class LagunaDeLosEspantos {
+        <<contenido>>
+        +crear()$ Campana
+    }
+
     class ControladorBatalla {
         -GestorBatalla gestor
         -VentanaBatalla vista
-        +comenzar(Supplier~GestorBatalla~ fabrica, String introduccion) void
-        +nuevaPartida() void
+        +comenzar(Campana campana) void
+        +accionSecundaria() void
         +ejecutarTurno() void
         -realizarAccion(atacante, objetivo, accion) String
         -contraataque() void
@@ -118,6 +144,10 @@ classDiagram
     ICurable <|.. Sacerdote
     GestorBatalla o-- "0..*" Personaje
     ControladorBatalla --> GestorBatalla
+    ControladorBatalla --> Campana
+    Campana o-- "1..*" Etapa
+    Etapa ..> GestorBatalla : crea
+    LagunaDeLosEspantos ..> Campana : arma
     ControladorBatalla --> VentanaBatalla
 ```
 
@@ -163,7 +193,10 @@ sequenceDiagram
 | 8 | `ControladorBatalla.comenzar(...)` recibe la batalla en vez de crearla | El mismo controlador sirve para encadenar varios combates (campaña) sin cambios. |
 | 9 | La recarga de la especial vive en `GestorBatalla` (`Map<Personaje, Integer>`) | Es una regla de la batalla, no de la clase del personaje, y deja `IHabilidadEspecial` casi igual al enunciado. Tras usarla hay que esperar 2 turnos. |
 | 10 | El modelo decide la jugada del monstruo (`elegirAccionAlAzar`, `elegirObjetivoAlAzar`) | El controlador solo la ejecuta. Ataque normal casi siempre; especial el 30 % de las veces si está lista; quien cura elige al compañero más herido. |
-| 11 | `comenzar` recibe una fábrica (`Supplier<GestorBatalla>`) | Permite el botón "Nueva partida" sin que el controlador sepa cómo se arma un equipo. |
+| 11 | Cada `Etapa` guarda una fábrica (`Supplier<GestorBatalla>`) y no la batalla armada | Reintentar una etapa perdida la crea de nuevo con todos los personajes intactos. |
+| 12 | `Campana` y `Etapa` en el modelo; los textos y estadísticas en el paquete `historia` | El modelo sabe *cómo* avanza una campaña; `LagunaDeLosEspantos` solo arma objetos. Otra historia sería otra clase en `historia`, sin tocar modelo, vista ni controlador. |
+| 13 | El controlador lleva un estado (`EN_BATALLA`, `ETAPA_SUPERADA`, `DERROTA`, `CAMPANA_COMPLETA`) | El botón pequeño hace lo que toca en cada momento: siguiente etapa, reintentar o volver a empezar. |
+| 14 | Verbo de ataque y nombre del especial como atributos de cada personaje | Cada espanto narra a su manera ("la Patasola desgarra con sus colmillos") sin crear una subclase por enemigo. |
 | 7 | La vista trabaja con nombres (`String`), el controlador busca el objeto real | Es el paso 3 del enunciado. Exige nombres únicos por partida. |
 
 ## Dudas para resolver (algunas con el docente)

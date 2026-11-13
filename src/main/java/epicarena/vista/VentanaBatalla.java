@@ -91,8 +91,18 @@ public class VentanaBatalla extends JFrame {
         panelControles.alEjecutarTurno(oyente);
     }
 
-    public void alNuevaPartida(ActionListener oyente) {
-        panelControles.alNuevaPartida(oyente);
+    public void alBotonSecundario(ActionListener oyente) {
+        panelControles.alBotonSecundario(oyente);
+    }
+
+    /** Texto del boton pequeno (reiniciar, siguiente etapa...) y si debe resaltar. */
+    public void configurarBotonSecundario(String texto, boolean destacado) {
+        panelControles.configurarBotonSecundario(texto, destacado);
+    }
+
+    /** Linea bajo el titulo: campana y etapa en curso. */
+    public void setSubtitulo(String texto) {
+        panelEstado.setSubtitulo(texto);
     }
 
     /** Pregunta al jugador y retorna true si acepta. */
