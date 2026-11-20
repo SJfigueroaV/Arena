@@ -1,218 +1,190 @@
 package epicarena.vista;
 
-import epicarena.modelo.TipoAccion;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.List;
+import java.awt.FlowLayout;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-/** Panel inferior: seleccion de la jugada y boton para ejecutar el turno. */
-class PanelControles extends JPanel {
+/**
+ * VISTA 3 (Controles del jugador): un mensaje que guia la jugada y la barra
+ * de habilidades del heroe elegido. La jugada se arma tocando personajes en
+ * la escena; aqui solo se elige que hace el heroe.
+ */
+public class PanelControles extends JPanel {
 
-    private final JComboBox<String> comboAtacante = new JComboBox<>();
-    private final JComboBox<TipoAccion> comboAccion = new JComboBox<>();
-    private final JComboBox<String> comboObjetivo = new JComboBox<>();
-    private final JLabel etiquetaObjetivo = crearEtiqueta("¿A quién ataca?");
+    private static final int ANCHO_BOTON_LATERAL = 190;
+
     private final JLabel mensaje = new JLabel(" ", SwingConstants.CENTER);
-    private final JButton botonTurno = new JButton("EJECUTAR TURNO");
-    private final JButton botonSecundario = new JButton("Reiniciar");
+    private final JButton btnSecundario = new JButton("Reiniciar");
+    private final JButton btnSonido = new JButton("Sonido: encendido");
 
-    private static final int ANCHO_BOTON_SECUNDARIO = 190;
+    private final JLabel heroe = new JLabel(" ");
+    private final JButton btnAtaque = new JButton();
+    private final JButton btnEspecial = new JButton();
+    private final JButton btnCancelar = new JButton("Cancelar");
+    private final JPanel barra = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 6));
+    private final JLabel ayuda = new JLabel(" ", SwingConstants.CENTER);
 
-    /** Evita avisar al controlador mientras la propia vista recarga las listas. */
-    private boolean cargando;
-    private boolean bloqueado;
-
-    PanelControles() {
-        super(new BorderLayout(0, 10));
+    public PanelControles() {
+        super(new BorderLayout(0, 8));
         setOpaque(false);
 
-        mensaje.setFont(Paleta.titulo(18));
+        mensaje.setFont(Paleta.titulo(20));
         mensaje.setForeground(Paleta.DORADO);
 
-        JPanel selectores = new JPanel(new GridLayout(2, 3, 14, 4));
-        selectores.setOpaque(false);
-        selectores.add(crearEtiqueta("¿Quién ataca?"));
-        selectores.add(crearEtiqueta("¿Qué acción realiza?"));
-        selectores.add(etiquetaObjetivo);
-        selectores.add(preparar(comboAtacante));
-        selectores.add(preparar(comboAccion));
-        selectores.add(preparar(comboObjetivo));
+        prepararLateral(btnSonido);
+        prepararLateral(btnSecundario);
+        configurarBotonSecundario(btnSecundario.getText(), false);
+        btnSonido.setBackground(Paleta.PANEL);
+        btnSonido.setForeground(Paleta.TEXTO_SUAVE);
 
-        prepararBoton();
-
-        prepararBotonSecundario();
         JPanel cabecera = new JPanel(new BorderLayout());
         cabecera.setOpaque(false);
-        cabecera.add(Box.createHorizontalStrut(ANCHO_BOTON_SECUNDARIO), BorderLayout.WEST);
+        cabecera.add(btnSonido, BorderLayout.WEST);
         cabecera.add(mensaje, BorderLayout.CENTER);
-        cabecera.add(botonSecundario, BorderLayout.EAST);
+        cabecera.add(btnSecundario, BorderLayout.EAST);
+
+        heroe.setFont(Paleta.titulo(22));
+        heroe.setForeground(Paleta.DORADO);
+        prepararAccion(btnAtaque);
+        prepararAccion(btnEspecial);
+        prepararAccion(btnCancelar);
+        btnCancelar.setFont(Paleta.textoFuerte(13));
+        barra.setOpaque(false);
+        barra.setPreferredSize(new Dimension(0, 64));
+        barra.add(heroe);
+        barra.add(btnAtaque);
+        barra.add(btnEspecial);
+        barra.add(btnCancelar);
+
+        ayuda.setFont(Paleta.texto(12));
+        ayuda.setForeground(Paleta.TEXTO_SUAVE);
 
         add(cabecera, BorderLayout.NORTH);
-        add(selectores, BorderLayout.CENTER);
-        add(botonTurno, BorderLayout.SOUTH);
+        add(barra, BorderLayout.CENTER);
+        add(ayuda, BorderLayout.SOUTH);
+        ocultarHabilidades();
     }
 
-    void cargarAtacantes(List<String> nombres) {
-        recargar(comboAtacante, nombres);
+    public JButton getBtnAtaque() {
+        return btnAtaque;
     }
 
-    void cargarAcciones(List<TipoAccion> acciones) {
-        recargar(comboAccion, acciones);
+    public JButton getBtnEspecial() {
+        return btnEspecial;
     }
 
-    void cargarObjetivos(List<String> nombres) {
-        recargar(comboObjetivo, nombres);
+    public JButton getBtnCancelar() {
+        return btnCancelar;
     }
 
-    String getAtacanteSeleccionado() {
-        return (String) comboAtacante.getSelectedItem();
+    /** Boton pequeno: reiniciar, pasar a la etapa siguiente o reintentar. */
+    public JButton getBtnSecundario() {
+        return btnSecundario;
     }
 
-    TipoAccion getAccionSeleccionada() {
-        return (TipoAccion) comboAccion.getSelectedItem();
+    public JButton getBtnSonido() {
+        return btnSonido;
     }
 
-    String getObjetivoSeleccionado() {
-        return (String) comboObjetivo.getSelectedItem();
+    /**
+     * Muestra las habilidades del heroe elegido.
+     *
+     * @param textoEspecial null si el heroe no tiene habilidad especial
+     * @param especialLista false si esta recargando: se ve pero no se puede usar
+     */
+    public void mostrarHabilidades(String nombre, String textoAtaque, String textoEspecial, boolean especialLista) {
+        heroe.setText(nombre + "  ▸");
+        btnAtaque.setText(textoAtaque);
+        btnAtaque.setVisible(true);
+        btnEspecial.setVisible(textoEspecial != null);
+        if (textoEspecial != null) {
+            btnEspecial.setText(textoEspecial);
+            btnEspecial.setEnabled(especialLista);
+        }
+        btnCancelar.setVisible(true);
+        marcarAccion(false, false);
     }
 
-    void setTextoObjetivo(String texto) {
-        etiquetaObjetivo.setText(texto);
+    /** Resalta en dorado la accion que el jugador eligio. */
+    public void marcarAccion(boolean ataque, boolean especial) {
+        pintar(btnAtaque, ataque);
+        pintar(btnEspecial, especial);
     }
 
-    void mostrarMensaje(String texto) {
+    public void ocultarHabilidades() {
+        heroe.setText(" ");
+        btnAtaque.setVisible(false);
+        btnEspecial.setVisible(false);
+        btnCancelar.setVisible(false);
+    }
+
+    /** Linea pequena con las teclas que se pueden usar. */
+    public void setAyudaTeclado(String texto) {
+        ayuda.setText(texto);
+    }
+
+    public void mostrarMensaje(String texto) {
         mensaje.setText(texto == null || texto.isBlank() ? " " : texto);
     }
 
-    void alEjecutarTurno(ActionListener oyente) {
-        botonTurno.addActionListener(oyente);
-    }
-
-    void alBotonSecundario(ActionListener oyente) {
-        botonSecundario.addActionListener(oyente);
+    public String getMensaje() {
+        return mensaje.getText();
     }
 
     /** Cambia el texto del boton pequeno; destacado lo pinta en dorado para invitar al clic. */
-    void configurarBotonSecundario(String texto, boolean destacado) {
-        botonSecundario.setText(texto);
-        botonSecundario.setBackground(destacado ? Paleta.DORADO : Paleta.PANEL_CLARO);
-        botonSecundario.setForeground(destacado ? Paleta.FONDO : Paleta.TEXTO);
-    }
-
-    void alCambiarAtacante(ActionListener oyente) {
-        comboAtacante.addActionListener(evento -> {
-            if (!cargando) {
-                oyente.actionPerformed(evento);
-            }
-        });
-    }
-
-    void alCambiarAccion(ActionListener oyente) {
-        comboAccion.addActionListener(evento -> {
-            if (!cargando) {
-                oyente.actionPerformed(evento);
-            }
-        });
-    }
-
-    void bloquear() {
-        bloqueado = true;
-        comboAtacante.setEnabled(false);
-        comboAccion.setEnabled(false);
-        comboObjetivo.setEnabled(false);
-        botonTurno.setEnabled(false);
-        botonTurno.setBackground(Paleta.BOTON_APAGADO);
-    }
-
-    void desbloquear() {
-        bloqueado = false;
-        comboAtacante.setEnabled(comboAtacante.getItemCount() > 0);
-        comboAccion.setEnabled(comboAccion.getItemCount() > 0);
-        comboObjetivo.setEnabled(comboObjetivo.getItemCount() > 0);
-        botonTurno.setEnabled(true);
-        botonTurno.setBackground(Paleta.BOTON);
-    }
-
-    /** Cambia el contenido conservando la seleccion anterior si todavia existe. */
-    private <T> void recargar(JComboBox<T> combo, List<T> elementos) {
-        Object anterior = combo.getSelectedItem();
-        cargando = true;
-        try {
-            DefaultComboBoxModel<T> modelo = new DefaultComboBoxModel<>();
-            for (T elemento : elementos) {
-                modelo.addElement(elemento);
-            }
-            combo.setModel(modelo);
-            if (anterior != null && elementos.contains(anterior)) {
-                combo.setSelectedItem(anterior);
-            }
-        } finally {
-            cargando = false;
+    public void configurarBotonSecundario(String texto, boolean destacado) {
+        btnSecundario.setText(texto);
+        if (destacado) {
+            btnSecundario.setBackground(Paleta.DORADO);
+            btnSecundario.setForeground(Paleta.FONDO);
+        } else {
+            btnSecundario.setBackground(Paleta.PANEL_CLARO);
+            btnSecundario.setForeground(Paleta.TEXTO);
         }
-        combo.setEnabled(!bloqueado && !elementos.isEmpty());
     }
 
-    private static JLabel crearEtiqueta(String texto) {
-        JLabel etiqueta = new JLabel(texto);
-        etiqueta.setFont(Paleta.textoFuerte(13));
-        etiqueta.setForeground(Paleta.TEXTO_SUAVE);
-        return etiqueta;
+    /** Cuando la partida termina no hay habilidades que elegir. */
+    public void bloquear() {
+        ocultarHabilidades();
     }
 
-    private <T> JComboBox<T> preparar(JComboBox<T> combo) {
-        combo.setFont(Paleta.texto(15));
-        combo.setPreferredSize(new Dimension(0, 34));
-        combo.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        return combo;
+    private void pintar(JButton boton, boolean elegido) {
+        if (elegido) {
+            boton.setBackground(Paleta.DORADO);
+            boton.setForeground(Paleta.FONDO);
+        } else {
+            boton.setBackground(Paleta.PANEL_CLARO);
+            boton.setForeground(Paleta.TEXTO);
+        }
     }
 
-    private void prepararBotonSecundario() {
-        botonSecundario.setFont(Paleta.textoFuerte(13));
-        botonSecundario.setOpaque(true);
-        botonSecundario.setFocusPainted(false);
-        botonSecundario.setBorder(BorderFactory.createLineBorder(Paleta.BORDE));
-        botonSecundario.setPreferredSize(new Dimension(ANCHO_BOTON_SECUNDARIO, 32));
-        botonSecundario.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        configurarBotonSecundario(botonSecundario.getText(), false);
+    private static void prepararAccion(JButton boton) {
+        boton.setFont(Paleta.textoFuerte(16));
+        boton.setOpaque(true);
+        boton.setFocusPainted(false);
+        boton.setFocusable(false);
+        boton.setBackground(Paleta.PANEL_CLARO);
+        boton.setForeground(Paleta.TEXTO);
+        boton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        boton.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Paleta.DORADO_OSCURO, 2),
+                BorderFactory.createEmptyBorder(10, 20, 10, 20)));
     }
 
-    private void prepararBoton() {
-        botonTurno.setFont(Paleta.titulo(28));
-        botonTurno.setForeground(java.awt.Color.WHITE);
-        botonTurno.setBackground(Paleta.BOTON);
-        botonTurno.setOpaque(true);
-        botonTurno.setFocusPainted(false);
-        botonTurno.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Paleta.BOTON_ENCIMA, 2),
-                BorderFactory.createEmptyBorder(14, 0, 14, 0)));
-        botonTurno.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        botonTurno.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent evento) {
-                if (botonTurno.isEnabled()) {
-                    botonTurno.setBackground(Paleta.BOTON_ENCIMA);
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent evento) {
-                if (botonTurno.isEnabled()) {
-                    botonTurno.setBackground(Paleta.BOTON);
-                }
-            }
-        });
+    private static void prepararLateral(JButton boton) {
+        boton.setFont(Paleta.textoFuerte(13));
+        boton.setOpaque(true);
+        boton.setFocusPainted(false);
+        boton.setFocusable(false);
+        boton.setBorder(BorderFactory.createLineBorder(Paleta.BORDE));
+        boton.setPreferredSize(new Dimension(ANCHO_BOTON_LATERAL, 32));
+        boton.setForeground(Color.WHITE);
     }
 }

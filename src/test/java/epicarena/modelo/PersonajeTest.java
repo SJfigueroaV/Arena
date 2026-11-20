@@ -189,4 +189,31 @@ class PersonajeTest {
 
         assertEquals("¡Sua invoca el Calor de Sué y recupera 32 puntos de vida!", sua.ejecutarEspecial(sua));
     }
+
+    @Test
+    void cadaSubclaseDiceSuClaseYSiTieneEspecial() {
+        Personaje guerrero = new Guerrero("Aragorn", 100, 30, 0);
+        Personaje mago = new Mago("Gandalf", 80, 20, 0);
+        Personaje sacerdote = new Sacerdote("Elrond", 90, 15, 0);
+
+        assertEquals("Guerrero", guerrero.getClase());
+        assertEquals("Mago", mago.getClase());
+        assertEquals("Sacerdote", sacerdote.getClase());
+        assertFalse(guerrero.tieneHabilidadEspecial());
+        assertTrue(mago.tieneHabilidadEspecial());
+        assertTrue(sacerdote.tieneHabilidadEspecial());
+    }
+
+    @Test
+    void laRecargaBajaTurnoATurnoSinPasarDeCero() {
+        Personaje mago = new Mago("Gandalf", 80, 20, 0);
+
+        mago.iniciarRecarga(2);
+        assertEquals(2, mago.getTurnosDeRecarga());
+        mago.avanzarRecarga();
+        mago.avanzarRecarga();
+        mago.avanzarRecarga();
+
+        assertEquals(0, mago.getTurnosDeRecarga());
+    }
 }

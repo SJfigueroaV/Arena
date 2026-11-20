@@ -8,6 +8,8 @@ public abstract class Personaje implements ICurable {
     private final int defensa;
     private int puntosDeVida;
     private boolean estaVivo;
+    /** Turnos que le faltan para volver a usar su habilidad especial. */
+    private int turnosDeRecarga;
 
     protected Personaje(String nombre, int puntosDeVida, int puntosDeAtaque, int defensa) {
         if (nombre == null || nombre.isBlank()) {
@@ -26,6 +28,46 @@ public abstract class Personaje implements ICurable {
 
     /** Cada subclase decide como ataca. Retorna la narrativa del ataque. */
     public abstract String atacar(Personaje enemigo);
+
+    /** Nombre de la clase del personaje, para mostrarlo en la tabla. */
+    public abstract String getClase();
+
+    /** Texto corto para el boton de ataque, por ejemplo "100 % de su fuerza". */
+    public abstract String describirAtaque();
+
+    /** Nombre de la habilidad especial, o null si no tiene. */
+    public String getNombreDelEspecial() {
+        return null;
+    }
+
+    /** Texto corto de lo que hace la habilidad especial, o null si no tiene. */
+    public String describirEspecial() {
+        return null;
+    }
+
+    /**
+     * Indica si el personaje implementa IHabilidadEspecial. Por defecto no;
+     * Mago y Sacerdote lo sobrescriben, asi nadie necesita preguntar por su clase.
+     */
+    public boolean tieneHabilidadEspecial() {
+        return false;
+    }
+
+    /** Deja la habilidad especial bloqueada durante los turnos indicados. */
+    public void iniciarRecarga(int turnos) {
+        turnosDeRecarga = Math.max(0, turnos);
+    }
+
+    /** Descuenta un turno de recarga, sin bajar de cero. */
+    public void avanzarRecarga() {
+        if (turnosDeRecarga > 0) {
+            turnosDeRecarga--;
+        }
+    }
+
+    public int getTurnosDeRecarga() {
+        return turnosDeRecarga;
+    }
 
     /**
      * Aplica un golpe que la defensa puede reducir. Un golpe siempre hace al
@@ -118,11 +160,6 @@ public abstract class Personaje implements ICurable {
 
     public boolean estaVivo() {
         return estaVivo;
-    }
-
-    /** Nombre de la clase del personaje, para mostrarlo en pantalla. */
-    public String getClase() {
-        return getClass().getSimpleName();
     }
 
     @Override

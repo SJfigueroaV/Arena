@@ -2,23 +2,23 @@ package epicarena.modelo;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 public class GestorBatalla {
 
-    private final List<Personaje> equipoJugador = new ArrayList<>();
-    private final List<Personaje> equipoEnemigo = new ArrayList<>();
+    /** Las dos acciones posibles, tal como se muestran en el desplegable. */
+    public static final String ATAQUE_NORMAL = "Ataque Normal";
+    public static final String HABILIDAD_ESPECIAL = "Habilidad Especial";
+
     /** Turnos que una habilidad especial queda sin poder usarse despues de lanzarla. */
     public static final int TURNOS_DE_RECARGA = 2;
 
     private static final double PROBABILIDAD_ESPECIAL_ENEMIGA = 0.3;
 
-    /** Turnos que le faltan a cada personaje para volver a usar su especial. */
-    private final Map<Personaje, Integer> recargas = new HashMap<>();
+    private final List<Personaje> equipoJugador = new ArrayList<>();
+    private final List<Personaje> equipoEnemigo = new ArrayList<>();
     private final Random azar;
 
     public GestorBatalla() {
@@ -73,14 +73,14 @@ public class GestorBatalla {
     }
 
     /** Acciones que puede realizar el personaje segun sus capacidades. */
-    public List<TipoAccion> accionesDisponibles(Personaje personaje) {
-        List<TipoAccion> acciones = new ArrayList<>();
+    public List<String> accionesDisponibles(Personaje personaje) {
+        List<String> acciones = new ArrayList<>();
         if (personaje == null) {
             return acciones;
         }
-        acciones.add(TipoAccion.ATAQUE_NORMAL);
-        if (personaje instanceof IHabilidadEspecial && turnosParaEspecial(personaje) == 0) {
-            acciones.add(TipoAccion.HABILIDAD_ESPECIAL);
+        acciones.add(ATAQUE_NORMAL);
+        if (personaje.tieneHabilidadEspecial() && turnosParaEspecial(personaje) == 0) {
+            acciones.add(HABILIDAD_ESPECIAL);
         }
         return acciones;
     }
@@ -89,7 +89,7 @@ public class GestorBatalla {
      * Personajes sobre los que el actor puede aplicar la accion: normalmente
      * el equipo rival, o el propio si su habilidad especial es de apoyo.
      */
-    public List<Personaje> objetivosValidos(Personaje actor, TipoAccion accion) {
+    public List<Personaje> objetivosValidos(Personaje actor, String accion) {
         if (actor == null || accion == null) {
             return new ArrayList<>();
         }
@@ -104,10 +104,12 @@ public class GestorBatalla {
     }
 
     /** Indica si la accion se aplica sobre un companero en lugar de un rival. */
-    public boolean esAccionDeApoyo(Personaje actor, TipoAccion accion) {
-        return accion == TipoAccion.HABILIDAD_ESPECIAL
-                && actor instanceof IHabilidadEspecial habilidad
-                && habilidad.especialApuntaAAliado();
+    public boolean esAccionDeApoyo(Personaje actor, String accion) {
+        if (actor == null || !HABILIDAD_ESPECIAL.equals(accion) || !actor.tieneHabilidadEspecial()) {
+            return false;
+        }
+        IHabilidadEspecial habilidad = (IHabilidadEspecial) actor;
+        return habilidad.especialApuntaAAliado();
     }
 
     public boolean esHeroe(Personaje personaje) {
@@ -117,24 +119,24 @@ public class GestorBatalla {
     /** Anota que el personaje acaba de usar su especial y debe recargarla. */
     public void registrarEspecialUsada(Personaje personaje) {
         // +1 porque el turno en que se usa tambien descuenta al terminar.
-        recargas.put(personaje, TURNOS_DE_RECARGA + 1);
+        personaje.iniciarRecarga(TURNOS_DE_RECARGA + 1);
     }
 
     /** Turnos que faltan para que el personaje pueda usar su especial. 0 si ya puede. */
     public int turnosParaEspecial(Personaje personaje) {
-        return recargas.getOrDefault(personaje, 0);
+        if (personaje == null) {
+            return 0;
+        }
+        return personaje.getTurnosDeRecarga();
     }
 
     /** Se llama al cerrar cada turno completo: avanza todas las recargas. */
     public void terminarTurno() {
-        Iterator<Map.Entry<Personaje, Integer>> iterador = recargas.entrySet().iterator();
-        while (iterador.hasNext()) {
-            Map.Entry<Personaje, Integer> recarga = iterador.next();
-            if (recarga.getValue() <= 1) {
-                iterador.remove();
-            } else {
-                recarga.setValue(recarga.getValue() - 1);
-            }
+        for (Personaje personaje : equipoJugador) {
+            personaje.avanzarRecarga();
+        }
+        for (Personaje personaje : equipoEnemigo) {
+            personaje.avanzarRecarga();
         }
     }
 
@@ -142,23 +144,21 @@ public class GestorBatalla {
      * Decide que hace un personaje controlado por el juego: casi siempre el
      * ataque normal y, a veces, su especial si la tiene lista y sirve de algo.
      */
-    public TipoAccion elegirAccionAlAzar(Personaje actor) {
-        if (!accionesDisponibles(actor).contains(TipoAccion.HABILIDAD_ESPECIAL)) {
-            return TipoAccion.ATAQUE_NORMAL;
+    public String elegirAccionAlAzar(Personaje actor) {
+        if (!accionesDisponibles(actor).contains(HABILIDAD_ESPECIAL)) {
+            return ATAQUE_NORMAL;
         }
-        if (esAccionDeApoyo(actor, TipoAccion.HABILIDAD_ESPECIAL) && masHerido(aliadosDe(actor)) == null) {
-            return TipoAccion.ATAQUE_NORMAL;
+        if (esAccionDeApoyo(actor, HABILIDAD_ESPECIAL) && masHerido(aliadosDe(actor)) == null) {
+            return ATAQUE_NORMAL;
         }
-        return azar.nextDouble() < PROBABILIDAD_ESPECIAL_ENEMIGA
-                ? TipoAccion.HABILIDAD_ESPECIAL
-                : TipoAccion.ATAQUE_NORMAL;
+        return azar.nextDouble() < PROBABILIDAD_ESPECIAL_ENEMIGA ? HABILIDAD_ESPECIAL : ATAQUE_NORMAL;
     }
 
     /**
      * Elige sobre quien aplica la accion: un rival al azar, o el companero
      * mas herido si la accion es de apoyo. Retorna null si no hay nadie.
      */
-    public Personaje elegirObjetivoAlAzar(Personaje actor, TipoAccion accion) {
+    public Personaje elegirObjetivoAlAzar(Personaje actor, String accion) {
         List<Personaje> candidatos = objetivosValidos(actor, accion);
         if (esAccionDeApoyo(actor, accion)) {
             Personaje herido = masHerido(candidatos);
@@ -222,7 +222,6 @@ public class GestorBatalla {
             Personaje personaje = iterador.next();
             if (!personaje.estaVivo()) {
                 iterador.remove();
-                recargas.remove(personaje);
                 eliminados.add(personaje);
             }
         }

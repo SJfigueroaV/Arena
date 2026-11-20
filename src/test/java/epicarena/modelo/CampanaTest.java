@@ -7,16 +7,29 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import epicarena.historia.LagunaDeLosEspantos;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class CampanaTest {
 
+    /** Campana minima para probar el recorrido de etapas: todas sus batallas estan vacias. */
+    private static class CampanaDePrueba extends Campana {
+
+        CampanaDePrueba() {
+            super("Prueba", "Fin", "Perdiste");
+        }
+
+        @Override
+        protected GestorBatalla crearBatalla(int numeroDeEtapa) {
+            return new GestorBatalla();
+        }
+    }
+
     private Campana campanaDeDos() {
-        Campana campana = new Campana("Prueba", "Fin", "Perdiste");
-        campana.agregarEtapa(new Etapa("Uno", "Intro uno", "Cierre uno", GestorBatalla::new));
-        campana.agregarEtapa(new Etapa("Dos", "Intro dos", "Cierre dos", GestorBatalla::new));
+        Campana campana = new CampanaDePrueba();
+        campana.agregarEtapa(new Etapa("Uno", "Intro uno", "Cierre uno"));
+        campana.agregarEtapa(new Etapa("Dos", "Intro dos", "Cierre dos"));
         return campana;
     }
 
@@ -48,11 +61,11 @@ class CampanaTest {
 
     @Test
     void cadaIntentoDeUnaEtapaCreaUnaBatallaNueva() {
-        Etapa etapa = LagunaDeLosEspantos.crear().etapaActual();
+        Campana campana = new LagunaDeLosEspantos();
 
-        GestorBatalla primera = etapa.crearBatalla();
+        GestorBatalla primera = campana.crearBatallaActual();
         primera.getEquipoJugador().get(0).recibirDanoDirecto(50);
-        GestorBatalla segunda = etapa.crearBatalla();
+        GestorBatalla segunda = campana.crearBatallaActual();
 
         assertNotSame(primera, segunda);
         Personaje heroe = segunda.getEquipoJugador().get(0);
@@ -61,22 +74,22 @@ class CampanaTest {
 
     @Test
     void unaCampanaSinEtapasOConEtapasInvalidasSeRechaza() {
-        Campana vacia = new Campana("Vacía", "", "");
+        Campana vacia = new CampanaDePrueba();
 
-        assertThrows(IllegalStateException.class, vacia::etapaActual);
+        assertThrows(IllegalStateException.class, () -> vacia.etapaActual());
+        assertThrows(IllegalStateException.class, () -> vacia.crearBatallaActual());
         assertThrows(IllegalArgumentException.class, () -> vacia.agregarEtapa(null));
-        assertThrows(IllegalArgumentException.class, () -> new Etapa("x", "x", "x", null));
     }
 
     @Test
     void laLagunaTieneCincoEtapasJugables() {
-        Campana campana = LagunaDeLosEspantos.crear();
+        Campana campana = new LagunaDeLosEspantos();
         assertEquals(5, campana.totalDeEtapas());
 
         int vidaAnteriorDeTyba = 0;
         for (int numero = 1; numero <= 5; numero++) {
             Etapa etapa = campana.etapaActual();
-            GestorBatalla batalla = etapa.crearBatalla();
+            GestorBatalla batalla = campana.crearBatallaActual();
 
             assertFalse(etapa.getTitulo().isBlank());
             assertFalse(etapa.getIntroduccion().isBlank());
@@ -85,12 +98,14 @@ class CampanaTest {
             assertTrue(batalla.getEquipoEnemigo().size() >= 3);
             assertFalse(batalla.verificarFinDelJuego());
 
-            Set<String> nombres = new HashSet<>();
+            List<String> nombres = new ArrayList<>();
             for (Personaje personaje : batalla.getEquipoJugador()) {
-                assertTrue(nombres.add(personaje.getNombre()));
+                assertFalse(nombres.contains(personaje.getNombre()), "nombre repetido");
+                nombres.add(personaje.getNombre());
             }
             for (Personaje personaje : batalla.getEquipoEnemigo()) {
-                assertTrue(nombres.add(personaje.getNombre()));
+                assertFalse(nombres.contains(personaje.getNombre()), "nombre repetido");
+                nombres.add(personaje.getNombre());
             }
 
             int vidaDeTyba = batalla.buscarPorNombre("Tyba").getPuntosDeVidaMaximos();

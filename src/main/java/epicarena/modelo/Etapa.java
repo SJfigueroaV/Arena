@@ -1,36 +1,32 @@
 package epicarena.modelo;
 
-import java.util.function.Supplier;
-
-/** Un combate de la campana: su texto y la forma de armar la batalla. */
+/** Un combate de la campana: los textos que se narran antes y despues. */
 public class Etapa {
 
     private final String titulo;
+    private final String escenario;
     private final String introduccion;
     private final String cierre;
-    private final Supplier<GestorBatalla> fabricaDeBatalla;
 
-    /**
-     * Recibe una fabrica y no la batalla ya armada, para poder crearla de
-     * nuevo desde cero cada vez que el jugador reintenta la etapa.
-     */
-    public Etapa(String titulo, String introduccion, String cierre, Supplier<GestorBatalla> fabricaDeBatalla) {
-        if (fabricaDeBatalla == null) {
-            throw new IllegalArgumentException("La etapa necesita una batalla");
-        }
-        this.titulo = titulo;
-        this.introduccion = introduccion;
-        this.cierre = cierre;
-        this.fabricaDeBatalla = fabricaDeBatalla;
+    public Etapa(String titulo, String introduccion, String cierre) {
+        this(titulo, null, introduccion, cierre);
     }
 
-    /** Crea una batalla nueva con todos los personajes intactos. */
-    public GestorBatalla crearBatalla() {
-        return fabricaDeBatalla.get();
+    /** El escenario es el nombre del lugar donde se pelea, por ejemplo "paramo". */
+    public Etapa(String titulo, String escenario, String introduccion, String cierre) {
+        this.titulo = titulo;
+        this.escenario = escenario;
+        this.introduccion = introduccion;
+        this.cierre = cierre;
     }
 
     public String getTitulo() {
         return titulo;
+    }
+
+    /** Retorna null si la etapa no tiene escenario. */
+    public String getEscenario() {
+        return escenario;
     }
 
     public String getIntroduccion() {

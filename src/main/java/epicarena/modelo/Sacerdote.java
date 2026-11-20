@@ -46,4 +46,29 @@ public class Sacerdote extends Personaje implements IHabilidadEspecial, ICurable
     public boolean especialApuntaAAliado() {
         return true;
     }
+
+    @Override
+    public String getClase() {
+        return "Sacerdote";
+    }
+
+    @Override
+    public boolean tieneHabilidadEspecial() {
+        return true;
+    }
+
+    @Override
+    public String describirAtaque() {
+        return "60 % de su fuerza";
+    }
+
+    @Override
+    public String getNombreDelEspecial() {
+        return nombreDelEspecial;
+    }
+
+    @Override
+    public String describirEspecial() {
+        return "cura a un aliado el doble de su fuerza";
+    }
 }

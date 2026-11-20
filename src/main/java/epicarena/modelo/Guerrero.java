@@ -20,4 +20,14 @@ public class Guerrero extends Personaje {
         int dano = enemigo.recibirDano(getPuntosDeAtaque());
         return narrarGolpe(verboDeAtaque, enemigo, dano);
     }
+
+    @Override
+    public String getClase() {
+        return "Guerrero";
+    }
+
+    @Override
+    public String describirAtaque() {
+        return "100 % de su fuerza";
+    }
 }

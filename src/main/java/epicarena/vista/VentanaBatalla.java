@@ -1,131 +1,146 @@
 package epicarena.vista;
 
-import epicarena.modelo.Personaje;
-import epicarena.modelo.TipoAccion;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 /**
- * Ventana principal. Solo muestra datos y avisa de los clics: no contiene
- * reglas del juego ni conoce al controlador.
+ * Ventana principal: solo acomoda las tres vistas con BorderLayout.
+ * No contiene reglas del juego ni conoce al controlador.
  */
 public class VentanaBatalla extends JFrame {
 
     private final PanelEstado panelEstado = new PanelEstado();
     private final PanelHistorial panelHistorial = new PanelHistorial();
     private final PanelControles panelControles = new PanelControles();
+    private final Sonido sonido = new Sonido();
+    private final PanelEscena panelEscena = new PanelEscena(sonido);
+    private final PanelPrologo panelPrologo = new PanelPrologo(sonido);
+    private final JPanel contenidoBatalla = new JPanel(new BorderLayout(0, 14));
+
+    // Teclas registradas: la tecla en una lista y quienes la escuchan en la otra.
+    private final List<String> teclas = new ArrayList<>();
+    private final List<List<ActionListener>> oyentesDeTeclas = new ArrayList<>();
 
     public VentanaBatalla() {
         super("Epic Arena");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JPanel contenido = new JPanel(new BorderLayout(0, 14));
+        JPanel contenido = contenidoBatalla;
         contenido.setBackground(Paleta.FONDO);
         contenido.setBorder(BorderFactory.createEmptyBorder(14, 18, 18, 18));
         contenido.add(panelEstado, BorderLayout.NORTH);
-        contenido.add(panelHistorial, BorderLayout.CENTER);
+        // Centro: la escena con los sprites arriba y el historial de batalla debajo.
+        JPanel centro = new JPanel(new BorderLayout(0, 10));
+        centro.setOpaque(false);
+        centro.add(panelEscena, BorderLayout.NORTH);
+        centro.add(panelHistorial, BorderLayout.CENTER);
+        contenido.add(centro, BorderLayout.CENTER);
         contenido.add(panelControles, BorderLayout.SOUTH);
         setContentPane(contenido);
 
-        setMinimumSize(new Dimension(900, 680));
-        setSize(1040, 760);
+        setMinimumSize(new Dimension(1010, 900));
+        setSize(1040, 1010);
         setLocationRelativeTo(null);
     }
 
-    /** Repinta las dos tablas con los personajes que siguen en combate. */
-    public void mostrarEquipos(List<Personaje> heroes, List<Personaje> monstruos) {
-        panelEstado.mostrarEquipos(heroes, monstruos);
+    public PanelEstado getPanelEstado() {
+        return panelEstado;
     }
 
-    public void agregarAlHistorial(String texto) {
-        panelHistorial.agregar(texto);
+    public PanelHistorial getPanelHistorial() {
+        return panelHistorial;
     }
 
-    public void limpiarHistorial() {
-        panelHistorial.limpiar();
+    /**
+     * Avisa al oyente cuando se presiona la tecla en cualquier parte de la
+     * ventana. La tecla se escribe como en KeyStroke: "Q", "1", "ENTER",
+     * "SPACE", "ESCAPE", "LEFT", "RIGHT". Varios oyentes pueden escuchar la
+     * misma tecla; cada uno decide si le toca (por ejemplo, segun la pantalla).
+     */
+    public void alPresionar(String tecla, ActionListener oyente) {
+        int posicion = teclas.indexOf(tecla);
+        if (posicion < 0) {
+            teclas.add(tecla);
+            oyentesDeTeclas.add(new ArrayList<>());
+            posicion = teclas.size() - 1;
+            getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(tecla), tecla);
+            getRootPane().getActionMap().put(tecla, new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    presionar(tecla);
+                }
+            });
+        }
+        oyentesDeTeclas.get(posicion).add(oyente);
     }
 
-    public void cargarAtacantes(List<String> nombres) {
-        panelControles.cargarAtacantes(nombres);
+    /** Hace lo mismo que presionar la tecla (lo usan tambien las pruebas). */
+    public void presionar(String tecla) {
+        int posicion = teclas.indexOf(tecla);
+        if (posicion < 0) {
+            return;
+        }
+        for (ActionListener oyente : new ArrayList<>(oyentesDeTeclas.get(posicion))) {
+            oyente.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, tecla));
+        }
     }
 
-    public void cargarAcciones(List<TipoAccion> acciones) {
-        panelControles.cargarAcciones(acciones);
+    public Sonido getSonido() {
+        return sonido;
     }
 
-    public void cargarObjetivos(List<String> nombres) {
-        panelControles.cargarObjetivos(nombres);
+    /** Enciende o apaga el sonido y actualiza los botones de las dos pantallas. */
+    public void alternarSonido() {
+        sonido.alternarSilencio();
+        String texto = sonido.estaSilenciado() ? "Sonido: apagado" : "Sonido: encendido";
+        panelControles.getBtnSonido().setText(texto);
+        panelPrologo.getBtnSonido().setText(texto);
     }
 
-    /** Retorna null si no hay nada seleccionado. */
-    public String getAtacanteSeleccionado() {
-        return panelControles.getAtacanteSeleccionado();
+    public PanelPrologo getPanelPrologo() {
+        return panelPrologo;
     }
 
-    /** Retorna null si no hay nada seleccionado. */
-    public TipoAccion getAccionSeleccionada() {
-        return panelControles.getAccionSeleccionada();
+    /** Muestra el prologo en toda la ventana. */
+    public void mostrarPrologo() {
+        setContentPane(panelPrologo);
+        revalidate();
+        repaint();
     }
 
-    /** Retorna null si no hay nada seleccionado. */
-    public String getObjetivoSeleccionado() {
-        return panelControles.getObjetivoSeleccionado();
+    /** Vuelve a la pantalla de batalla. */
+    public void mostrarBatalla() {
+        setContentPane(contenidoBatalla);
+        revalidate();
+        repaint();
     }
 
-    /** Cambia la pregunta sobre el objetivo, por ejemplo "¿A quién ayuda?". */
-    public void setTextoObjetivo(String texto) {
-        panelControles.setTextoObjetivo(texto);
+    public boolean estaEnPrologo() {
+        return getContentPane() == panelPrologo;
     }
 
-    public void mostrarMensaje(String texto) {
-        panelControles.mostrarMensaje(texto);
+    public PanelEscena getPanelEscena() {
+        return panelEscena;
     }
 
-    public void alEjecutarTurno(ActionListener oyente) {
-        panelControles.alEjecutarTurno(oyente);
-    }
-
-    public void alBotonSecundario(ActionListener oyente) {
-        panelControles.alBotonSecundario(oyente);
-    }
-
-    /** Texto del boton pequeno (reiniciar, siguiente etapa...) y si debe resaltar. */
-    public void configurarBotonSecundario(String texto, boolean destacado) {
-        panelControles.configurarBotonSecundario(texto, destacado);
-    }
-
-    /** Linea bajo el titulo: campana y etapa en curso. */
-    public void setSubtitulo(String texto) {
-        panelEstado.setSubtitulo(texto);
+    public PanelControles getPanelControles() {
+        return panelControles;
     }
 
     /** Pregunta al jugador y retorna true si acepta. */
     public boolean confirmar(String pregunta) {
         return JOptionPane.showConfirmDialog(this, pregunta, "Epic Arena",
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION;
-    }
-
-    public void alCambiarAtacante(ActionListener oyente) {
-        panelControles.alCambiarAtacante(oyente);
-    }
-
-    public void alCambiarAccion(ActionListener oyente) {
-        panelControles.alCambiarAccion(oyente);
-    }
-
-    /** Desactiva los controles cuando la partida termina. */
-    public void bloquearControles() {
-        panelControles.bloquear();
-    }
-
-    /** Vuelve a activar los controles al comenzar una batalla nueva. */
-    public void desbloquearControles() {
-        panelControles.desbloquear();
     }
 }

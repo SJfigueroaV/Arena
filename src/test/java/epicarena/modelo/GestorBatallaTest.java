@@ -68,8 +68,8 @@ class GestorBatallaTest {
 
     @Test
     void soloQuienTieneHabilidadEspecialLaPuedeElegir() {
-        assertEquals(List.of(TipoAccion.ATAQUE_NORMAL), gestor.accionesDisponibles(aragorn));
-        assertEquals(List.of(TipoAccion.ATAQUE_NORMAL, TipoAccion.HABILIDAD_ESPECIAL),
+        assertEquals(List.of(GestorBatalla.ATAQUE_NORMAL), gestor.accionesDisponibles(aragorn));
+        assertEquals(List.of(GestorBatalla.ATAQUE_NORMAL, GestorBatalla.HABILIDAD_ESPECIAL),
                 gestor.accionesDisponibles(gandalf));
         assertTrue(gestor.accionesDisponibles(null).isEmpty());
     }
@@ -77,25 +77,25 @@ class GestorBatallaTest {
     @Test
     void elAtaqueNormalApuntaAlEquipoRival() {
         assertEquals(List.of(orco, nigromante),
-                gestor.objetivosValidos(aragorn, TipoAccion.ATAQUE_NORMAL));
+                gestor.objetivosValidos(aragorn, GestorBatalla.ATAQUE_NORMAL));
         assertEquals(List.of(aragorn, gandalf, elrond),
-                gestor.objetivosValidos(orco, TipoAccion.ATAQUE_NORMAL));
+                gestor.objetivosValidos(orco, GestorBatalla.ATAQUE_NORMAL));
     }
 
     @Test
     void laEspecialDelMagoApuntaARivalesYLaDelSacerdoteAAliados() {
         assertEquals(List.of(orco, nigromante),
-                gestor.objetivosValidos(gandalf, TipoAccion.HABILIDAD_ESPECIAL));
+                gestor.objetivosValidos(gandalf, GestorBatalla.HABILIDAD_ESPECIAL));
         assertEquals(List.of(aragorn, gandalf, elrond),
-                gestor.objetivosValidos(elrond, TipoAccion.HABILIDAD_ESPECIAL));
+                gestor.objetivosValidos(elrond, GestorBatalla.HABILIDAD_ESPECIAL));
     }
 
     @Test
     void sinActorOConUnDesconocidoNoHayObjetivos() {
-        assertTrue(gestor.objetivosValidos(null, TipoAccion.ATAQUE_NORMAL).isEmpty());
+        assertTrue(gestor.objetivosValidos(null, GestorBatalla.ATAQUE_NORMAL).isEmpty());
         assertTrue(gestor.objetivosValidos(aragorn, null).isEmpty());
         assertTrue(gestor.objetivosValidos(new Guerrero("Intruso", 10, 1, 0),
-                TipoAccion.ATAQUE_NORMAL).isEmpty());
+                GestorBatalla.ATAQUE_NORMAL).isEmpty());
     }
 
     @Test
@@ -175,28 +175,28 @@ class GestorBatallaTest {
         gestor.terminarTurno();
 
         assertEquals(2, gestor.turnosParaEspecial(gandalf));
-        assertEquals(List.of(TipoAccion.ATAQUE_NORMAL), gestor.accionesDisponibles(gandalf));
+        assertEquals(List.of(GestorBatalla.ATAQUE_NORMAL), gestor.accionesDisponibles(gandalf));
 
         gestor.terminarTurno();
         assertEquals(1, gestor.turnosParaEspecial(gandalf));
 
         gestor.terminarTurno();
         assertEquals(0, gestor.turnosParaEspecial(gandalf));
-        assertTrue(gestor.accionesDisponibles(gandalf).contains(TipoAccion.HABILIDAD_ESPECIAL));
+        assertTrue(gestor.accionesDisponibles(gandalf).contains(GestorBatalla.HABILIDAD_ESPECIAL));
     }
 
     @Test
     void laRecargaDeUnoNoAfectaALosDemas() {
         gestor.registrarEspecialUsada(gandalf);
 
-        assertTrue(gestor.accionesDisponibles(elrond).contains(TipoAccion.HABILIDAD_ESPECIAL));
+        assertTrue(gestor.accionesDisponibles(elrond).contains(GestorBatalla.HABILIDAD_ESPECIAL));
         assertEquals(0, gestor.turnosParaEspecial(aragorn));
     }
 
     @Test
     void quienNoTieneEspecialSiempreEligeElAtaqueNormal() {
         for (int i = 0; i < 100; i++) {
-            assertEquals(TipoAccion.ATAQUE_NORMAL, gestor.elegirAccionAlAzar(orco));
+            assertEquals(GestorBatalla.ATAQUE_NORMAL, gestor.elegirAccionAlAzar(orco));
         }
     }
 
@@ -204,7 +204,7 @@ class GestorBatallaTest {
     void elEnemigoUsaSuEspecialSoloAVecesYNuncaEnRecarga() {
         int especiales = 0;
         for (int i = 0; i < 400; i++) {
-            if (gestor.elegirAccionAlAzar(nigromante) == TipoAccion.HABILIDAD_ESPECIAL) {
+            if (GestorBatalla.HABILIDAD_ESPECIAL.equals(gestor.elegirAccionAlAzar(nigromante))) {
                 especiales++;
             }
         }
@@ -212,14 +212,14 @@ class GestorBatallaTest {
 
         gestor.registrarEspecialUsada(nigromante);
         for (int i = 0; i < 100; i++) {
-            assertEquals(TipoAccion.ATAQUE_NORMAL, gestor.elegirAccionAlAzar(nigromante));
+            assertEquals(GestorBatalla.ATAQUE_NORMAL, gestor.elegirAccionAlAzar(nigromante));
         }
     }
 
     @Test
     void elSanadorNoGastaSuEspecialSiNadieEstaHerido() {
         for (int i = 0; i < 100; i++) {
-            assertEquals(TipoAccion.ATAQUE_NORMAL, gestor.elegirAccionAlAzar(elrond));
+            assertEquals(GestorBatalla.ATAQUE_NORMAL, gestor.elegirAccionAlAzar(elrond));
         }
     }
 
@@ -228,13 +228,13 @@ class GestorBatallaTest {
         aragorn.recibirDanoDirecto(30);
         gandalf.recibirDanoDirecto(50);
 
-        assertSame(gandalf, gestor.elegirObjetivoAlAzar(elrond, TipoAccion.HABILIDAD_ESPECIAL));
+        assertSame(gandalf, gestor.elegirObjetivoAlAzar(elrond, GestorBatalla.HABILIDAD_ESPECIAL));
     }
 
     @Test
     void elObjetivoDeUnAtaqueEsSiempreUnRival() {
         for (int i = 0; i < 50; i++) {
-            Personaje objetivo = gestor.elegirObjetivoAlAzar(orco, TipoAccion.ATAQUE_NORMAL);
+            Personaje objetivo = gestor.elegirObjetivoAlAzar(orco, GestorBatalla.ATAQUE_NORMAL);
             assertTrue(gestor.getEquipoJugador().contains(objetivo));
         }
     }

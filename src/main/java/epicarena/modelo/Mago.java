@@ -38,4 +38,29 @@ public class Mago extends Personaje implements IHabilidadEspecial {
     public boolean especialApuntaAAliado() {
         return false;
     }
+
+    @Override
+    public String getClase() {
+        return "Mago";
+    }
+
+    @Override
+    public boolean tieneHabilidadEspecial() {
+        return true;
+    }
+
+    @Override
+    public String describirAtaque() {
+        return "débil: la mitad de su fuerza";
+    }
+
+    @Override
+    public String getNombreDelEspecial() {
+        return nombreDelEspecial;
+    }
+
+    @Override
+    public String describirEspecial() {
+        return "2,5 veces su fuerza, ignora la defensa";
+    }
 }

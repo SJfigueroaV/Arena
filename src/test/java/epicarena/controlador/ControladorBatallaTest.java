@@ -2,8 +2,8 @@ package epicarena.controlador;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
@@ -15,13 +15,12 @@ import epicarena.modelo.Guerrero;
 import epicarena.modelo.Mago;
 import epicarena.modelo.Personaje;
 import epicarena.modelo.Sacerdote;
-import epicarena.modelo.TipoAccion;
+import epicarena.vista.PanelControles;
 import epicarena.vista.VentanaBatalla;
 import java.awt.GraphicsEnvironment;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.function.Supplier;
 import javax.swing.SwingUtilities;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,38 +28,84 @@ import org.junit.jupiter.api.Test;
 /** Juega con la ventana real (sin mostrarla). Se omite si no hay entorno grafico. */
 class ControladorBatallaTest {
 
+    private static final String PAREJA = "pareja";
+    private static final String FACIL = "facil";
+    private static final String IMPOSIBLE = "imposible";
+    private static final String SIN_ENEMIGOS = "sin enemigos";
+
     /** Batallas creadas durante la prueba, en orden. */
     private final List<GestorBatalla> creadas = new ArrayList<>();
-    private VentanaBatalla vista;
+    private PanelControles vista;
     private ControladorBatalla controlador;
+
+    /**
+     * Campana de prueba: cada etapa se describe con el nombre de una batalla
+     * y cada batalla que se crea queda registrada en "creadas".
+     */
+    private class CampanaDePrueba extends Campana {
+
+        private final List<String> batallas;
+
+        CampanaDePrueba(List<String> batallas) {
+            super("Prueba", "EPILOGO", "DERROTA");
+            this.batallas = batallas;
+            for (int numero = 1; numero <= batallas.size(); numero++) {
+                agregarEtapa(new Etapa("Etapa " + numero, "Intro", "Cierre"));
+            }
+        }
+
+        @Override
+        protected GestorBatalla crearBatalla(int numeroDeEtapa) {
+            GestorBatalla batalla = armar(batallas.get(numeroDeEtapa - 1));
+            creadas.add(batalla);
+            return batalla;
+        }
+    }
 
     @BeforeEach
     void prepararPartida() throws Exception {
         assumeFalse(GraphicsEnvironment.isHeadless());
-        SwingUtilities.invokeAndWait(() -> {
-            vista = new VentanaBatalla();
-            controlador = new ControladorBatalla(vista);
-            controlador.comenzar(campana(this::batallaPareja));
-        });
+        SwingUtilities.invokeAndWait(() -> jugar(new CampanaDePrueba(List.of(PAREJA))));
+    }
+
+    /** Arma la ventana y el controlador como lo hace Main, y empieza la campana. */
+    private void jugar(Campana campana) {
+        VentanaBatalla ventana = new VentanaBatalla();
+        vista = ventana.getPanelControles();
+        controlador = new ControladorBatalla(campana, ventana,
+                ventana.getPanelEstado(), ventana.getPanelHistorial(), ventana.getPanelControles(),
+                ventana.getPanelEscena());
+        controlador.iniciar();
+    }
+
+    /** Juega un turno simple: el primer heroe ataca al primer espanto. */
+    private void turno() {
+        GestorBatalla batalla = ultima();
+        if (batalla.getEquipoJugador().isEmpty() || batalla.getEquipoEnemigo().isEmpty()) {
+            controlador.jugar(null, GestorBatalla.ATAQUE_NORMAL, null);
+            return;
+        }
+        controlador.jugar(batalla.getEquipoJugador().get(0).getNombre(), GestorBatalla.ATAQUE_NORMAL,
+                batalla.getEquipoEnemigo().get(0).getNombre());
     }
 
     private GestorBatalla ultima() {
         return creadas.get(creadas.size() - 1);
     }
 
-    /** Campana cuyas etapas registran cada batalla que crean. */
-    @SafeVarargs
-    private Campana campana(Supplier<GestorBatalla>... fabricas) {
-        Campana campana = new Campana("Prueba", "EPILOGO", "DERROTA");
-        int numero = 1;
-        for (Supplier<GestorBatalla> fabrica : fabricas) {
-            campana.agregarEtapa(new Etapa("Etapa " + numero++, "Intro", "Cierre", () -> {
-                GestorBatalla batalla = fabrica.get();
-                creadas.add(batalla);
-                return batalla;
-            }));
+    private GestorBatalla armar(String tipo) {
+        switch (tipo) {
+            case FACIL:
+                return batallaFacil();
+            case IMPOSIBLE:
+                return batallaImposible();
+            case SIN_ENEMIGOS:
+                GestorBatalla sinEnemigos = new GestorBatalla();
+                sinEnemigos.agregarHeroe(new Guerrero("Solo", 50, 10, 0));
+                return sinEnemigos;
+            default:
+                return batallaPareja();
         }
-        return campana;
     }
 
     private GestorBatalla batallaPareja() {
@@ -90,18 +135,129 @@ class ControladorBatallaTest {
     }
 
     @Test
-    void alComenzarLaVistaOfreceUnaJugadaValida() throws Exception {
+    void alComenzarPideTocarAUnHeroe() throws Exception {
         SwingUtilities.invokeAndWait(() -> {
-            assertEquals("Aragorn", vista.getAtacanteSeleccionado());
-            assertEquals(TipoAccion.ATAQUE_NORMAL, vista.getAccionSeleccionada());
-            assertEquals("Orco", vista.getObjetivoSeleccionado());
+            assertTrue(vista.getMensaje().startsWith("Toca a uno de tus héroes"));
+            assertFalse(vista.getBtnAtaque().isVisible());
+        });
+    }
+
+    @Test
+    void tocarUnEspantoSinHeroePideElegirPrimeroAUnHeroe() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            controlador.tocarPersonaje("Orco");
+            assertEquals("Primero toca a uno de tus héroes", vista.getMensaje());
+            assertEquals(110, ultima().buscarPorNombre("Orco").getPuntosDeVida());
+        });
+    }
+
+    @Test
+    void tocarHeroeYLuegoEspantoLoAtacaConElGolpeNormal() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            controlador.tocarPersonaje("Aragorn");
+            assertTrue(vista.getBtnAtaque().isVisible());
+            assertFalse(vista.getBtnEspecial().isVisible(), "el guerrero no tiene especial");
+
+            controlador.tocarPersonaje("Orco");
+
+            assertEquals(110 - (28 - 5), ultima().buscarPorNombre("Orco").getPuntosDeVida());
+        });
+    }
+
+    @Test
+    void laHabilidadEspecialSeEligeEnLaBarraYLuegoSeTocaElObjetivo() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            controlador.tocarPersonaje("Gandalf");
+            assertTrue(vista.getBtnEspecial().isVisible());
+            assertTrue(vista.getBtnEspecial().getText().contains("Tormenta Arcana"));
+
+            vista.getBtnEspecial().doClick();
+            controlador.tocarPersonaje("Orco");
+
+            assertEquals(110 - 60, ultima().buscarPorNombre("Orco").getPuntosDeVida(), "ignora la defensa");
+        });
+    }
+
+    @Test
+    void laCuracionNoSePuedeUsarSobreUnEspanto() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            controlador.tocarPersonaje("Elrond");
+            vista.getBtnEspecial().doClick();
+            controlador.tocarPersonaje("Orco");
+
+            assertTrue(vista.getMensaje().startsWith("Esa habilidad es para tus compañeros"));
+            assertEquals(110, ultima().buscarPorNombre("Orco").getPuntosDeVida());
+        });
+    }
+
+    @Test
+    void conElTecladoSeEligeHeroeObjetivoYSeConfirma() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            VentanaBatalla ventana = (VentanaBatalla) javax.swing.SwingUtilities.getWindowAncestor(vista);
+            ventana.presionar("1");           // Aragorn: solo ataca, el cursor queda en el Orco
+            ventana.presionar("RIGHT");       // pasa al Nigromante
+            ventana.presionar("ENTER");
+
+            assertEquals(110, ultima().buscarPorNombre("Orco").getPuntosDeVida());
+            assertEquals(70 - (28 - 1), ultima().buscarPorNombre("Nigromante").getPuntosDeVida());
+        });
+    }
+
+    @Test
+    void conElTecladoSeUsaLaHabilidadEspecial() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            VentanaBatalla ventana = (VentanaBatalla) javax.swing.SwingUtilities.getWindowAncestor(vista);
+            ventana.presionar("2");           // Gandalf
+            ventana.presionar("E");
+            ventana.presionar("SPACE");
+
+            assertEquals(110 - 60, ultima().buscarPorNombre("Orco").getPuntosDeVida());
+        });
+    }
+
+    @Test
+    void escapeCancelaLaSeleccionDelTeclado() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            VentanaBatalla ventana = (VentanaBatalla) javax.swing.SwingUtilities.getWindowAncestor(vista);
+            ventana.presionar("2");
+            ventana.presionar("ESCAPE");
+            ventana.presionar("ENTER");
+
+            assertEquals(110, ultima().buscarPorNombre("Orco").getPuntosDeVida());
+            assertTrue(vista.getMensaje().startsWith("Primero elige un héroe"));
+        });
+    }
+
+    @Test
+    void laBarraDeVidaBajaCuandoSeVeElGolpe() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            VentanaBatalla ventana = (VentanaBatalla) javax.swing.SwingUtilities.getWindowAncestor(vista);
+            assertEquals(110, ventana.getPanelEscena().getVidaMostrada("Orco"));
+
+            controlador.tocarPersonaje("Aragorn");
+            controlador.tocarPersonaje("Orco");
+            assertEquals(110, ventana.getPanelEscena().getVidaMostrada("Orco"), "todavía no se ve el golpe");
+
+            ventana.getPanelEscena().terminarAnimaciones();
+            assertEquals(110 - (28 - 5), ventana.getPanelEscena().getVidaMostrada("Orco"));
+        });
+    }
+
+    @Test
+    void cancelarBorraLaSeleccion() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            controlador.tocarPersonaje("Gandalf");
+            vista.getBtnCancelar().doClick();
+            assertFalse(vista.getBtnAtaque().isVisible());
+            controlador.tocarPersonaje("Orco");
+            assertEquals(110, ultima().buscarPorNombre("Orco").getPuntosDeVida());
         });
     }
 
     @Test
     void unTurnoDanaAlObjetivoYProvocaContraataque() throws Exception {
         SwingUtilities.invokeAndWait(() -> {
-            controlador.ejecutarTurno();
+            turno();
 
             assertEquals(110 - (28 - 5), ultima().buscarPorNombre("Orco").getPuntosDeVida());
             int vidaHeroes = 0;
@@ -118,66 +274,57 @@ class ControladorBatallaTest {
             GestorBatalla batalla = ultima();
             int turnos = 0;
             while (!batalla.verificarFinDelJuego() && turnos < 500) {
-                controlador.ejecutarTurno();
+                turno();
                 turnos++;
-                if (!batalla.verificarFinDelJuego()) {
-                    assertNotNull(batalla.buscarPorNombre(vista.getAtacanteSeleccionado()),
-                            "el atacante seleccionado debe seguir en combate");
-                    assertNotNull(batalla.buscarPorNombre(vista.getObjetivoSeleccionado()),
-                            "el objetivo seleccionado debe seguir en combate");
-                }
             }
 
             assertTrue(batalla.verificarFinDelJuego());
-            assertDoesNotThrow(() -> controlador.ejecutarTurno(), "un clic tras el final no debe fallar");
+            assertDoesNotThrow(() -> controlador.tocarPersonaje("Aragorn"), "un clic tras el final no debe fallar");
+            assertFalse(vista.getBtnAtaque().isVisible(), "tras el final no se elige nada");
         });
     }
 
     @Test
     void conUnEquipoVacioNoHayNadaQueSeleccionarNiErrores() throws Exception {
         SwingUtilities.invokeAndWait(() -> {
-            controlador.comenzar(campana(() -> {
-                GestorBatalla sinEnemigos = new GestorBatalla();
-                sinEnemigos.agregarHeroe(new Guerrero("Solo", 50, 10, 0));
-                return sinEnemigos;
-            }));
+            jugar(new CampanaDePrueba(List.of(SIN_ENEMIGOS)));
 
-            assertNull(vista.getObjetivoSeleccionado());
-            assertDoesNotThrow(() -> controlador.ejecutarTurno());
+            assertDoesNotThrow(() -> controlador.tocarPersonaje("Solo"));
+            assertDoesNotThrow(() -> turno());
         });
     }
 
     @Test
     void alGanarUnaEtapaElBotonSecundarioPasaALaSiguiente() throws Exception {
         SwingUtilities.invokeAndWait(() -> {
-            controlador.comenzar(campana(this::batallaFacil, this::batallaPareja));
+            jugar(new CampanaDePrueba(List.of(FACIL, PAREJA)));
             int antes = creadas.size();
 
-            controlador.ejecutarTurno();
+            turno();
             assertTrue(ultima().ganoElJugador());
-            controlador.ejecutarTurno();
+            turno();
             assertEquals(antes, creadas.size(), "ganar no crea otra batalla por si solo");
 
             controlador.accionSecundaria();
 
             assertEquals(antes + 1, creadas.size());
-            assertEquals("Aragorn", vista.getAtacanteSeleccionado());
+            assertNotNull(ultima().buscarPorNombre("Aragorn"));
         });
     }
 
     @Test
     void alPerderSeReintentaLaMismaEtapaDesdeCero() throws Exception {
         SwingUtilities.invokeAndWait(() -> {
-            controlador.comenzar(campana(this::batallaFacil, this::batallaImposible));
-            controlador.ejecutarTurno();
+            jugar(new CampanaDePrueba(List.of(FACIL, IMPOSIBLE)));
+            turno();
             controlador.accionSecundaria();
-            controlador.ejecutarTurno();
+            turno();
             GestorBatalla perdida = ultima();
             assertTrue(perdida.verificarFinDelJuego());
 
             controlador.accionSecundaria();
 
-            assertEquals("Novato", vista.getAtacanteSeleccionado(), "sigue en la segunda etapa");
+            assertNotNull(ultima().buscarPorNombre("Novato"), "sigue en la segunda etapa");
             assertEquals(5, ultima().buscarPorNombre("Novato").getPuntosDeVida());
         });
     }
@@ -185,10 +332,10 @@ class ControladorBatallaTest {
     @Test
     void alCompletarLaCampanaSeVuelveAEmpezarDesdeLaPrimeraEtapa() throws Exception {
         SwingUtilities.invokeAndWait(() -> {
-            controlador.comenzar(campana(this::batallaFacil, this::batallaFacil));
-            controlador.ejecutarTurno();
+            jugar(new CampanaDePrueba(List.of(FACIL, FACIL)));
+            turno();
             controlador.accionSecundaria();
-            controlador.ejecutarTurno();
+            turno();
             int antes = creadas.size();
 
             controlador.accionSecundaria();
@@ -201,10 +348,10 @@ class ControladorBatallaTest {
     @Test
     void laCampanaRealSeJuegaDePrincipioAFinSinErrores() throws Exception {
         SwingUtilities.invokeAndWait(() -> {
-            controlador.comenzar(LagunaDeLosEspantos.crear());
+            jugar(new LagunaDeLosEspantos());
 
             for (int paso = 0; paso < 3000; paso++) {
-                controlador.ejecutarTurno();
+                turno();
                 if (paso % 40 == 39) {
                     controlador.accionSecundaria();
                 }
