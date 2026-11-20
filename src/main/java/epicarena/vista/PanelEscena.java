@@ -29,13 +29,14 @@ public class PanelEscena extends JPanel {
     private static final int MARGEN_INFERIOR_BASE = 21;
 
     private final JLabel fondo = new JLabel();
-    private final JPanel filaHeroes = crearFila(FlowLayout.LEFT);
-    private final JPanel filaEnemigos = crearFila(FlowLayout.RIGHT);
+    private final JPanel filaHeroes;
+    private final JPanel filaEnemigos;
     private final List<SpriteAnimado> sprites = new ArrayList<>();
     private final List<FichaEnEscena> fichas = new ArrayList<>();
     private final List<Integer> colaVidas = new ArrayList<>();
     private final int escala;
     private boolean conVida = true;
+    private int anchoMaximoFicha = Integer.MAX_VALUE;
 
     // Cola de animaciones pendientes: quien, que animacion y que efecto suena.
     private final List<String> colaNombres = new ArrayList<>();
@@ -68,6 +69,8 @@ public class PanelEscena extends JPanel {
         setPreferredSize(new Dimension(ancho, alto));
         this.sonido = sonido;
         this.escala = escala;
+        filaHeroes = crearFila(FlowLayout.LEFT, 0);
+        filaEnemigos = crearFila(FlowLayout.RIGHT, 0);
         if (escala == 3) {
             raiz = "/sprites/x3/";
         } else {
@@ -116,6 +119,9 @@ public class PanelEscena extends JPanel {
         actuando = null;
         filaHeroes.removeAll();
         filaEnemigos.removeAll();
+        // Si son muchos, cada ficha se angosta para que todos quepan en la escena.
+        int total = Math.max(1, heroes.size() + enemigos.size());
+        anchoMaximoFicha = (ANCHO_BASE * escala - 2 * 12 * escala) / total;
         for (int i = 0; i < heroes.size(); i++) {
             agregar(filaHeroes, new SpriteAnimado(heroes.get(i), i, raiz), true);
         }
@@ -256,7 +262,7 @@ public class PanelEscena extends JPanel {
         for (ActionListener oyente : oyentesDeClic) {
             sprite.addActionListener(oyente);
         }
-        FichaEnEscena ficha = new FichaEnEscena(sprite, raiz, escala, conVida, esHeroe);
+        FichaEnEscena ficha = new FichaEnEscena(sprite, raiz, escala, conVida, esHeroe, anchoMaximoFicha);
         sprites.add(sprite);
         fichas.add(ficha);
         fila.add(ficha);
@@ -326,8 +332,8 @@ public class PanelEscena extends JPanel {
         return null;
     }
 
-    private static JPanel crearFila(int alineacion) {
-        JPanel fila = new JPanel(new FlowLayout(alineacion, 0, 0));
+    private static JPanel crearFila(int alineacion, int separacion) {
+        JPanel fila = new JPanel(new FlowLayout(alineacion, separacion, 0));
         fila.setOpaque(false);
         return fila;
     }

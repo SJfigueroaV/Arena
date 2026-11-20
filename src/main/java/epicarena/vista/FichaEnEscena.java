@@ -22,7 +22,8 @@ public class FichaEnEscena extends JPanel {
     private final SpriteAnimado sprite;
     private final JProgressBar vida = new JProgressBar();
 
-    public FichaEnEscena(SpriteAnimado sprite, String raiz, int escala, boolean conVida, boolean esHeroe) {
+    public FichaEnEscena(SpriteAnimado sprite, String raiz, int escala, boolean conVida, boolean esHeroe,
+            int anchoMaximo) {
         this.sprite = sprite;
         setLayout(new OverlayLayout(this));
         setOpaque(false);
@@ -55,6 +56,8 @@ public class FichaEnEscena extends JPanel {
         // Cuanto se aparta el cuerpo del centro del cuadro (el escudo o el costal lo cargan a un lado)
         int desvio = cabeza[1] - tamano.width / 2;
         int ancho = Math.max(tamano.width, nombre.getPreferredSize().width + 18 + 2 * Math.abs(desvio));
+        // Nunca mas ancha de lo que le toca en la escena (el borde del cuadro es transparente).
+        ancho = Math.min(ancho, anchoMaximo);
         Dimension total = new Dimension(ancho, tamano.height);
         int alturaInfo = nombre.getPreferredSize().height + vida.getPreferredSize().height + 4;
         int arriba = Math.max(0, cabeza[0] - alturaInfo - 2);
