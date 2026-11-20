@@ -78,7 +78,7 @@ public class ControladorBatalla {
 
     /** Todo el juego se puede jugar con el teclado. */
     private void registrarTeclado() {
-        vistaControles.setAyudaTeclado("Teclado — 1 2 3: héroe · Q: ataque · E: especial · ← →: objetivo · "
+        vistaControles.setAyudaTeclado("Teclado — 1 2 3: héroe · Q: ataque · E: especial · Flechas: objetivo · "
                 + "Enter: confirmar · Esc: cancelar · R: reiniciar o saltar práctica · M: sonido");
         ventana.alPresionar("1", e -> teclaDeHeroe(0));
         ventana.alPresionar("2", e -> teclaDeHeroe(1));

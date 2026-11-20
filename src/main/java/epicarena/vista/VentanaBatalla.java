@@ -11,6 +11,7 @@ import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -26,7 +27,8 @@ public class VentanaBatalla extends JFrame {
     private final Sonido sonido = new Sonido();
     private final PanelEscena panelEscena = new PanelEscena(sonido);
     private final PanelPrologo panelPrologo = new PanelPrologo(sonido);
-    private final JPanel contenidoBatalla = new JPanel(new BorderLayout(0, 14));
+    // Un JLabel con la textura de fondo hace de panel: los demas van encima.
+    private final JLabel contenidoBatalla = new JLabel(Paleta.imagen("fondo_ventana"));
 
     // Teclas registradas: la tecla en una lista y quienes la escuchan en la otra.
     private final List<String> teclas = new ArrayList<>();
@@ -36,7 +38,9 @@ public class VentanaBatalla extends JFrame {
         super("Epic Arena");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JPanel contenido = contenidoBatalla;
+        JLabel contenido = contenidoBatalla;
+        contenido.setLayout(new BorderLayout(0, 12));
+        contenido.setOpaque(true);
         contenido.setBackground(Paleta.FONDO);
         contenido.setBorder(BorderFactory.createEmptyBorder(14, 18, 18, 18));
         contenido.add(panelEstado, BorderLayout.NORTH);
@@ -49,8 +53,8 @@ public class VentanaBatalla extends JFrame {
         contenido.add(panelControles, BorderLayout.SOUTH);
         setContentPane(contenido);
 
-        setMinimumSize(new Dimension(1010, 900));
-        setSize(1040, 1010);
+        setMinimumSize(new Dimension(1080, 960));
+        setSize(1100, 1040);
         setLocationRelativeTo(null);
     }
 

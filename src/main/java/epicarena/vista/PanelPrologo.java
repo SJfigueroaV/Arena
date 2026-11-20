@@ -1,7 +1,6 @@
 package epicarena.vista;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
@@ -27,7 +26,7 @@ public class PanelPrologo extends JPanel {
     private final JTextArea texto = new JTextArea();
     private final JLabel instruccion = new JLabel(" ", SwingConstants.CENTER);
     private final JLabel ayuda = new JLabel(
-            "Teclado — Enter o Espacio: siguiente · ← →: personajes · Esc: saltar · M: sonido", SwingConstants.CENTER);
+            "Teclado — Enter o Espacio: siguiente · Flechas: personajes · Esc: saltar · M: sonido", SwingConstants.CENTER);
     private final JButton btnSonido = new JButton("Sonido: encendido");
     private final JLabel contador = new JLabel(" ");
     private final JButton btnSaltar = new JButton("Saltar prólogo");
@@ -50,28 +49,30 @@ public class PanelPrologo extends JPanel {
         escena = new PanelEscena(sonido, escala);
         escena.setMostrarVida(false);
         setBackground(Paleta.FONDO);
-        setBorder(BorderFactory.createEmptyBorder(16, 18, 16, 18));
 
-        titulo.setFont(Paleta.titulo(34));
+        titulo.setFont(Paleta.titulo(24));
         titulo.setForeground(Paleta.DORADO);
 
         texto.setEditable(false);
         texto.setFocusable(false);
         texto.setLineWrap(true);
         texto.setWrapStyleWord(true);
-        texto.setFont(Paleta.narracion(21));
+        // Cuadro de dialogo: texto claro sobre noche, dentro de un marco de piedra.
+        texto.setFont(Paleta.narracion(28));
         texto.setForeground(Paleta.TEXTO);
-        texto.setBackground(Paleta.FONDO);
-        texto.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
-        texto.setPreferredSize(new Dimension(anchoTexto, 140));
+        texto.setBackground(Paleta.NOCHE_CLARA);
+        texto.setOpaque(true);
+        texto.setBorder(BorderFactory.createCompoundBorder(Paleta.marcoNoche(),
+                BorderFactory.createEmptyBorder(8, 14, 8, 14)));
+        texto.setPreferredSize(new Dimension(anchoTexto, 170));
 
-        instruccion.setFont(Paleta.subtitulo(16));
+        instruccion.setFont(Paleta.subtitulo(24));
         instruccion.setForeground(Paleta.LUNA);
 
         JPanel lectura = new JPanel(new BorderLayout(0, 6));
         lectura.setOpaque(false);
         lectura.add(texto, BorderLayout.CENTER);
-        ayuda.setFont(Paleta.texto(12));
+        ayuda.setFont(Paleta.texto(19));
         ayuda.setForeground(Paleta.TEXTO_SUAVE);
         JPanel indicaciones = new JPanel(new BorderLayout(0, 4));
         indicaciones.setOpaque(false);
@@ -84,11 +85,12 @@ public class PanelPrologo extends JPanel {
         centro.add(centrar(escena), BorderLayout.NORTH);
         centro.add(centrar(lectura), BorderLayout.CENTER);
 
-        contador.setFont(Paleta.textoFuerte(13));
-        contador.setForeground(Paleta.TEXTO_SUAVE);
-        preparar(btnSaltar, Paleta.PANEL_CLARO, Paleta.TEXTO);
-        preparar(btnSiguiente, Paleta.DORADO, Paleta.FONDO);
-        preparar(btnSonido, Paleta.PANEL, Paleta.TEXTO_SUAVE);
+        contador.setFont(Paleta.textoFuerte(16));
+        contador.setForeground(Paleta.DORADO);
+        Paleta.comoPlaca(btnSaltar, Paleta.PLACA_PROLOGO, Paleta.texto(22));
+        Paleta.comoPlaca(btnSiguiente, Paleta.PLACA_PROLOGO, Paleta.texto(22));
+        Paleta.pintarPlaca(btnSiguiente, Paleta.PLACA_PROLOGO, "elegido");
+        Paleta.comoPlaca(btnSonido, Paleta.PLACA_LATERAL, Paleta.texto(20));
 
         JPanel botones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         botones.setOpaque(false);
@@ -97,7 +99,7 @@ public class PanelPrologo extends JPanel {
         botones.add(btnSiguiente);
         JPanel pie = new JPanel(new BorderLayout());
         pie.setOpaque(false);
-        pie.setPreferredSize(new Dimension(480 * escala, 40));
+        pie.setPreferredSize(new Dimension(480 * escala + 40, 48));
         pie.add(btnSonido, BorderLayout.WEST);
         pie.add(botones, BorderLayout.EAST);
 
@@ -109,8 +111,9 @@ public class PanelPrologo extends JPanel {
         bloque.add(centrar(pie), BorderLayout.SOUTH);
 
         // ...que GridBagLayout deja centrado en la ventana, sea del tamano que sea.
-        JPanel medio = new JPanel(new GridBagLayout());
-        medio.setOpaque(false);
+        // La textura de fondo es un JLabel que hace de panel.
+        JLabel medio = new JLabel(Paleta.imagen("fondo_ventana"));
+        medio.setLayout(new GridBagLayout());
         medio.add(bloque);
         add(medio, BorderLayout.CENTER);
     }
@@ -152,11 +155,6 @@ public class PanelPrologo extends JPanel {
     /** Apagado, el boton se ve gris y no responde. */
     public void setSiguienteHabilitado(boolean habilitado) {
         btnSiguiente.setEnabled(habilitado);
-        if (habilitado) {
-            btnSiguiente.setBackground(Paleta.DORADO);
-        } else {
-            btnSiguiente.setBackground(Paleta.PANEL_CLARO);
-        }
     }
 
     /** Empieza a escribir el texto letra por letra. */
@@ -197,17 +195,5 @@ public class PanelPrologo extends JPanel {
         envoltura.setOpaque(false);
         envoltura.add(componente);
         return envoltura;
-    }
-
-    private static void preparar(JButton boton, Color fondo, Color letra) {
-        boton.setFont(Paleta.textoFuerte(14));
-        boton.setBackground(fondo);
-        boton.setForeground(letra);
-        boton.setOpaque(true);
-        boton.setFocusPainted(false);
-        boton.setFocusable(false);
-        boton.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Paleta.BORDE),
-                BorderFactory.createEmptyBorder(8, 18, 8, 18)));
     }
 }

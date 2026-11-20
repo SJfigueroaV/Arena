@@ -30,23 +30,28 @@ public class PanelEstado extends JPanel {
         super(new BorderLayout(0, 10));
         setOpaque(false);
 
+        // El titulo es un dibujo pixelado; si no esta, queda el texto.
         JLabel titulo = new JLabel("EPIC ARENA", SwingConstants.CENTER);
-        titulo.setFont(Paleta.titulo(34));
+        titulo.setFont(Paleta.titulo(32));
         titulo.setForeground(Paleta.DORADO);
+        if (Paleta.imagen("logo") != null) {
+            titulo.setText(null);
+            titulo.setIcon(Paleta.imagen("logo"));
+        }
 
-        subtitulo.setFont(Paleta.subtitulo(16));
-        subtitulo.setForeground(Paleta.TEXTO_SUAVE);
+        subtitulo.setFont(Paleta.subtitulo(24));
+        subtitulo.setForeground(Paleta.DORADO_CLARO);
 
-        JPanel cabecera = new JPanel(new GridLayout(2, 1, 0, 2));
+        JPanel cabecera = new JPanel(new BorderLayout(0, 0));
         cabecera.setOpaque(false);
-        cabecera.add(titulo);
-        cabecera.add(subtitulo);
+        cabecera.add(titulo, BorderLayout.CENTER);
+        cabecera.add(subtitulo, BorderLayout.SOUTH);
         add(cabecera, BorderLayout.NORTH);
 
         JPanel tablas = new JPanel(new GridLayout(1, 2, 14, 0));
         tablas.setOpaque(false);
-        tablas.add(crearSeccion("HÉROES", Paleta.HEROES, modeloHeroes));
-        tablas.add(crearSeccion("MONSTRUOS", Paleta.MONSTRUOS, modeloMonstruos));
+        tablas.add(crearSeccion("HÉROES", "icono_heroes", Paleta.HEROES, modeloHeroes));
+        tablas.add(crearSeccion("MONSTRUOS", "icono_monstruos", Paleta.MONSTRUOS, modeloMonstruos));
         add(tablas, BorderLayout.CENTER);
     }
 
@@ -75,24 +80,29 @@ public class PanelEstado extends JPanel {
         };
     }
 
-    private JPanel crearSeccion(String nombre, Color color, DefaultTableModel modelo) {
+    private JPanel crearSeccion(String nombre, String icono, Color color, DefaultTableModel modelo) {
         JLabel etiqueta = new JLabel(nombre);
-        etiqueta.setFont(Paleta.titulo(18));
+        etiqueta.setFont(Paleta.titulo(16));
         etiqueta.setForeground(color);
+        etiqueta.setIcon(Paleta.imagen(icono));
+        etiqueta.setIconTextGap(10);
 
         JTable tabla = new JTable(modelo);
         tabla.setRowHeight(ALTO_FILA);
-        tabla.setFont(Paleta.texto(14));
-        tabla.setBackground(Paleta.PANEL);
+        tabla.setFont(Paleta.texto(24));
+        tabla.setBackground(Paleta.TIERRA);
         tabla.setForeground(Paleta.TEXTO);
-        tabla.setGridColor(Paleta.BORDE);
+        tabla.setGridColor(Paleta.CAFE);
+        tabla.setShowVerticalLines(false);
+        tabla.setIntercellSpacing(new Dimension(0, 1));
         tabla.setRowSelectionAllowed(false);
         tabla.setFocusable(false);
         tabla.setFillsViewportHeight(true);
         tabla.getTableHeader().setReorderingAllowed(false);
-        tabla.getTableHeader().setFont(Paleta.textoFuerte(13));
-        tabla.getTableHeader().setBackground(Paleta.PANEL_CLARO);
-        tabla.getTableHeader().setForeground(color);
+        tabla.getTableHeader().setFont(Paleta.textoFuerte(8));
+        tabla.getTableHeader().setBackground(Paleta.ROJO_MANTA);
+        tabla.getTableHeader().setForeground(Paleta.DORADO_CLARO);
+        tabla.getTableHeader().setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, Paleta.NOCHE));
         tabla.getColumnModel().getColumn(0).setPreferredWidth(185);
         tabla.getColumnModel().getColumn(1).setPreferredWidth(88);
         tabla.getColumnModel().getColumn(2).setPreferredWidth(120);
@@ -100,9 +110,9 @@ public class PanelEstado extends JPanel {
         tabla.getColumnModel().getColumn(4).setPreferredWidth(38);
 
         JScrollPane desplazamiento = new JScrollPane(tabla);
-        desplazamiento.getViewport().setBackground(Paleta.PANEL);
-        desplazamiento.setBorder(BorderFactory.createLineBorder(Paleta.BORDE));
-        desplazamiento.setPreferredSize(new Dimension(0, ALTO_FILA * FILAS_VISIBLES + 32));
+        desplazamiento.getViewport().setBackground(Paleta.TIERRA);
+        desplazamiento.setBorder(Paleta.marcoFino());
+        desplazamiento.setPreferredSize(new Dimension(0, ALTO_FILA * FILAS_VISIBLES + 58));
 
         JPanel seccion = new JPanel(new BorderLayout(0, 6));
         seccion.setOpaque(false);

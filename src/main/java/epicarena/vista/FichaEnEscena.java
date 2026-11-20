@@ -29,15 +29,19 @@ public class FichaEnEscena extends JPanel {
         setOpaque(false);
 
         JLabel nombre = new JLabel(sprite.getNombre(), SwingConstants.CENTER);
-        nombre.setFont(Paleta.textoFuerte(6 * escala));
-        nombre.setForeground(esHeroe ? Paleta.HEROES : Paleta.MONSTRUOS);
+        Color color = esHeroe ? Paleta.HEROES : Paleta.MONSTRUOS;
+        nombre.setFont(Paleta.texto(9 * escala));
+        nombre.setForeground(color);
         nombre.setOpaque(true);
-        nombre.setBackground(Paleta.FONDO);
-        nombre.setBorder(BorderFactory.createEmptyBorder(1, 5, 1, 5));
+        nombre.setBackground(Paleta.NOCHE);
+        nombre.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, escala, 0, color.darker()),
+                BorderFactory.createEmptyBorder(0, 3 * escala, 0, 3 * escala)));
 
         vida.setPreferredSize(new Dimension(40 * escala, 4 * escala));
-        vida.setBorderPainted(false);
-        vida.setBackground(Paleta.FONDO);
+        vida.setBorderPainted(true);
+        vida.setBorder(BorderFactory.createLineBorder(Paleta.NOCHE, 1));
+        vida.setBackground(Paleta.NOCHE_CLARA);
         vida.setVisible(conVida);
 
         JPanel columna = new JPanel(new BorderLayout(0, 2));
@@ -96,11 +100,11 @@ public class FichaEnEscena extends JPanel {
         vida.setMaximum(Math.max(1, maxima));
         vida.setValue(Math.max(0, actual));
         double proporcion = (double) actual / Math.max(1, maxima);
-        Color color = new Color(0x4CAF6A);
+        Color color = Paleta.VIDA_ALTA;
         if (proporcion <= 0.3) {
-            color = new Color(0xD9534F);
+            color = Paleta.VIDA_BAJA;
         } else if (proporcion <= 0.6) {
-            color = new Color(0xE0B44C);
+            color = Paleta.VIDA_MEDIA;
         }
         vida.setForeground(color);
     }

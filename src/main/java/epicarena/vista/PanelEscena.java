@@ -3,6 +3,7 @@ package epicarena.vista;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.net.URL;
 import java.util.ArrayList;
@@ -66,7 +67,12 @@ public class PanelEscena extends JPanel {
         setOpaque(false);
         int ancho = ANCHO_BASE * escala;
         int alto = ALTO_BASE * escala;
-        setPreferredSize(new Dimension(ancho, alto));
+        // La escena va dentro de un marco de grecas muiscas (el borde es del fondo).
+        fondo.setBorder(Paleta.marcoGreca());
+        Insets marco = fondo.getInsets();
+        int anchoConMarco = ancho + marco.left + marco.right;
+        int altoConMarco = alto + marco.top + marco.bottom;
+        setPreferredSize(new Dimension(anchoConMarco, altoConMarco));
         this.sonido = sonido;
         this.escala = escala;
         filaHeroes = crearFila(FlowLayout.LEFT, 0);
@@ -77,11 +83,10 @@ public class PanelEscena extends JPanel {
             raiz = "/sprites/";
         }
 
-        fondo.setPreferredSize(new Dimension(ancho, alto));
+        fondo.setPreferredSize(new Dimension(anchoConMarco, altoConMarco));
         fondo.setLayout(new BorderLayout());
         fondo.setOpaque(true);
-        fondo.setBackground(Paleta.PANEL);
-        fondo.setBorder(BorderFactory.createLineBorder(Paleta.BORDE));
+        fondo.setBackground(Paleta.NOCHE);
 
         JPanel personajes = new JPanel(new BorderLayout());
         personajes.setOpaque(false);

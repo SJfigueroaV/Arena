@@ -30,9 +30,9 @@ public class PasoGuiado {
                 && objetivo.equals(objetivoElegido);
     }
 
-    /** Por ejemplo "Tyba → Ataque Normal → Sombra del Silbón". */
+    /** Por ejemplo "Tyba » Ataque Normal » Sombra del Silbón". */
     public String resumen() {
-        return atacante + " → " + accion + " → " + objetivo;
+        return atacante + " » " + accion + " » " + objetivo;
     }
 
     public String getAtacante() {

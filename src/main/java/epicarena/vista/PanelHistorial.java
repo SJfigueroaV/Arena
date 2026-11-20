@@ -17,21 +17,25 @@ public class PanelHistorial extends JPanel {
         setOpaque(false);
 
         JLabel etiqueta = new JLabel("HISTORIAL DE BATALLA");
-        etiqueta.setFont(Paleta.titulo(18));
+        etiqueta.setFont(Paleta.titulo(16));
         etiqueta.setForeground(Paleta.DORADO);
+        etiqueta.setIcon(Paleta.imagen("icono_historial"));
+        etiqueta.setIconTextGap(10);
         add(etiqueta, BorderLayout.NORTH);
 
         area.setEditable(false);
         area.setFocusable(false);
         area.setLineWrap(true);
         area.setWrapStyleWord(true);
-        area.setFont(Paleta.narracion(16));
-        area.setBackground(Paleta.PANEL);
-        area.setForeground(Paleta.TEXTO);
-        area.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
+        // Pergamino: tinta cafe sobre papel claro.
+        area.setFont(Paleta.narracion(23));
+        area.setBackground(Paleta.PERGAMINO);
+        area.setForeground(Paleta.TINTA);
+        area.setBorder(BorderFactory.createEmptyBorder(8, 16, 8, 16));
 
         JScrollPane desplazamiento = new JScrollPane(area);
-        desplazamiento.setBorder(BorderFactory.createLineBorder(Paleta.BORDE));
+        desplazamiento.setBorder(Paleta.marcoFino());
+        desplazamiento.getViewport().setBackground(Paleta.PERGAMINO);
         add(desplazamiento, BorderLayout.CENTER);
     }
 

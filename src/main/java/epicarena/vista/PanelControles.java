@@ -1,11 +1,8 @@
 package epicarena.vista;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -18,7 +15,6 @@ import javax.swing.SwingConstants;
  */
 public class PanelControles extends JPanel {
 
-    private static final int ANCHO_BOTON_LATERAL = 190;
 
     private final JLabel mensaje = new JLabel(" ", SwingConstants.CENTER);
     private final JButton btnSecundario = new JButton("Reiniciar");
@@ -35,14 +31,12 @@ public class PanelControles extends JPanel {
         super(new BorderLayout(0, 8));
         setOpaque(false);
 
-        mensaje.setFont(Paleta.titulo(20));
-        mensaje.setForeground(Paleta.DORADO);
+        mensaje.setFont(Paleta.texto(30));
+        mensaje.setForeground(Paleta.DORADO_CLARO);
 
-        prepararLateral(btnSonido);
-        prepararLateral(btnSecundario);
+        Paleta.comoPlaca(btnSonido, Paleta.PLACA_LATERAL, Paleta.texto(20));
+        Paleta.comoPlaca(btnSecundario, Paleta.PLACA_LATERAL, Paleta.texto(20));
         configurarBotonSecundario(btnSecundario.getText(), false);
-        btnSonido.setBackground(Paleta.PANEL);
-        btnSonido.setForeground(Paleta.TEXTO_SUAVE);
 
         JPanel cabecera = new JPanel(new BorderLayout());
         cabecera.setOpaque(false);
@@ -50,20 +44,19 @@ public class PanelControles extends JPanel {
         cabecera.add(mensaje, BorderLayout.CENTER);
         cabecera.add(btnSecundario, BorderLayout.EAST);
 
-        heroe.setFont(Paleta.titulo(22));
+        heroe.setFont(Paleta.titulo(16));
         heroe.setForeground(Paleta.DORADO);
-        prepararAccion(btnAtaque);
-        prepararAccion(btnEspecial);
-        prepararAccion(btnCancelar);
-        btnCancelar.setFont(Paleta.textoFuerte(13));
+        Paleta.comoPlaca(btnAtaque, Paleta.PLACA_HABILIDAD, Paleta.texto(20));
+        Paleta.comoPlaca(btnEspecial, Paleta.PLACA_HABILIDAD, Paleta.texto(20));
+        Paleta.comoPlaca(btnCancelar, Paleta.PLACA_CANCELAR, Paleta.texto(22));
         barra.setOpaque(false);
-        barra.setPreferredSize(new Dimension(0, 64));
+        barra.setPreferredSize(new Dimension(0, 82));
         barra.add(heroe);
         barra.add(btnAtaque);
         barra.add(btnEspecial);
         barra.add(btnCancelar);
 
-        ayuda.setFont(Paleta.texto(12));
+        ayuda.setFont(Paleta.texto(19));
         ayuda.setForeground(Paleta.TEXTO_SUAVE);
 
         add(cabecera, BorderLayout.NORTH);
@@ -100,12 +93,12 @@ public class PanelControles extends JPanel {
      * @param especialLista false si esta recargando: se ve pero no se puede usar
      */
     public void mostrarHabilidades(String nombre, String textoAtaque, String textoEspecial, boolean especialLista) {
-        heroe.setText(nombre + "  ▸");
-        btnAtaque.setText(textoAtaque);
+        heroe.setText(nombre + " »");
+        btnAtaque.setText(enDosLineas(textoAtaque));
         btnAtaque.setVisible(true);
         btnEspecial.setVisible(textoEspecial != null);
         if (textoEspecial != null) {
-            btnEspecial.setText(textoEspecial);
+            btnEspecial.setText(enDosLineas(textoEspecial));
             btnEspecial.setEnabled(especialLista);
         }
         btnCancelar.setVisible(true);
@@ -141,13 +134,7 @@ public class PanelControles extends JPanel {
     /** Cambia el texto del boton pequeno; destacado lo pinta en dorado para invitar al clic. */
     public void configurarBotonSecundario(String texto, boolean destacado) {
         btnSecundario.setText(texto);
-        if (destacado) {
-            btnSecundario.setBackground(Paleta.DORADO);
-            btnSecundario.setForeground(Paleta.FONDO);
-        } else {
-            btnSecundario.setBackground(Paleta.PANEL_CLARO);
-            btnSecundario.setForeground(Paleta.TEXTO);
-        }
+        Paleta.pintarPlaca(btnSecundario, Paleta.PLACA_LATERAL, destacado ? "elegido" : "normal");
     }
 
     /** Cuando la partida termina no hay habilidades que elegir. */
@@ -156,35 +143,23 @@ public class PanelControles extends JPanel {
     }
 
     private void pintar(JButton boton, boolean elegido) {
-        if (elegido) {
-            boton.setBackground(Paleta.DORADO);
-            boton.setForeground(Paleta.FONDO);
-        } else {
-            boton.setBackground(Paleta.PANEL_CLARO);
-            boton.setForeground(Paleta.TEXTO);
+        Paleta.pintarPlaca(boton, Paleta.PLACA_HABILIDAD, elegido ? "elegido" : "normal");
+    }
+
+    /**
+     * "[E] La Luz de Chia · 2,5 veces su fuerza" queda en dos lineas: el nombre
+     * de la habilidad en letra pixelada y debajo lo que hace.
+     */
+    private static String enDosLineas(String texto) {
+        int corte = texto.indexOf(" · ");
+        if (corte < 0) {
+            return texto;
         }
-    }
-
-    private static void prepararAccion(JButton boton) {
-        boton.setFont(Paleta.textoFuerte(16));
-        boton.setOpaque(true);
-        boton.setFocusPainted(false);
-        boton.setFocusable(false);
-        boton.setBackground(Paleta.PANEL_CLARO);
-        boton.setForeground(Paleta.TEXTO);
-        boton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        boton.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Paleta.DORADO_OSCURO, 2),
-                BorderFactory.createEmptyBorder(10, 20, 10, 20)));
-    }
-
-    private static void prepararLateral(JButton boton) {
-        boton.setFont(Paleta.textoFuerte(13));
-        boton.setOpaque(true);
-        boton.setFocusPainted(false);
-        boton.setFocusable(false);
-        boton.setBorder(BorderFactory.createLineBorder(Paleta.BORDE));
-        boton.setPreferredSize(new Dimension(ANCHO_BOTON_LATERAL, 32));
-        boton.setForeground(Color.WHITE);
+        String nombre = texto.substring(0, corte);
+        String detalle = texto.substring(corte + 3);
+        return "<html><div style='text-align:center'>"
+                + "<span style=\"font-family:'" + Paleta.familiaPixel() + "'; font-size:16pt\">" + nombre + "</span><br>"
+                + "<span style=\"font-family:'" + Paleta.familiaTerminal() + "'; font-size:20pt\">" + detalle + "</span>"
+                + "</div></html>";
     }
 }
