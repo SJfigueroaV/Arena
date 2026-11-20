@@ -1,4 +1,4 @@
-# Diseño de Epic Arena
+# Diseño de Guardianes del Tunjo
 
 Borrador para revisar entre los dos **antes** de escribir código.
 

@@ -8,7 +8,7 @@
     <artifactId>epic-arena</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
-    <name>Epic Arena</name>
+    <name>Guardianes del Tunjo</name>
 
     <properties>
         <maven.compiler.release>21</maven.compiler.release>

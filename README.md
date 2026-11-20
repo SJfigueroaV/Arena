@@ -1,4 +1,4 @@
-# Epic Arena — La Laguna de los Espantos
+# Guardianes del Tunjo — La Laguna de los Espantos
 
 RPG de combate por turnos hecho en Java Swing con arquitectura MVC.
 Tres muiscas devuelven el último tunjo a la laguna de Guatavita a través de

@@ -31,7 +31,7 @@ public class PanelEstado extends JPanel {
         setOpaque(false);
 
         // El titulo es un dibujo pixelado; si no esta, queda el texto.
-        JLabel titulo = new JLabel("EPIC ARENA", SwingConstants.CENTER);
+        JLabel titulo = new JLabel("GUARDIANES DEL TUNJO", SwingConstants.CENTER);
         titulo.setFont(Paleta.titulo(32));
         titulo.setForeground(Paleta.DORADO);
         if (Paleta.imagen("logo") != null) {

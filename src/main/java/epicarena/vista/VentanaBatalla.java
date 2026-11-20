@@ -35,7 +35,7 @@ public class VentanaBatalla extends JFrame {
     private final List<List<ActionListener>> oyentesDeTeclas = new ArrayList<>();
 
     public VentanaBatalla() {
-        super("Epic Arena");
+        super("Guardianes del Tunjo");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JLabel contenido = contenidoBatalla;
@@ -144,7 +144,7 @@ public class VentanaBatalla extends JFrame {
 
     /** Pregunta al jugador y retorna true si acepta. */
     public boolean confirmar(String pregunta) {
-        return JOptionPane.showConfirmDialog(this, pregunta, "Epic Arena",
+        return JOptionPane.showConfirmDialog(this, pregunta, "Guardianes del Tunjo",
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION;
     }
 }
