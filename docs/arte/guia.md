@@ -7,6 +7,12 @@ el juego los carga tal cual.
 
 La historia completa de cada personaje está en `docs/lore.md`.
 
+En `docs/arte/referencias/` hay un boceto de cada personaje y de cada fondo,
+dibujados con la paleta y las medidas reales, más dos hojas de contacto
+(`hoja_personajes.png` y `hoja_fondos.png`). Sirven para ver silueta,
+proporciones y colores; las poses son rígidas y el sombreado simple, así que
+la versión final queda a cargo de quien dibuje.
+
 ## 1. Especificaciones técnicas
 
 ### Resolución base
@@ -88,22 +94,42 @@ parpadear el cuadro quieto.
 
 ## 3. Nombres y carpetas
 
-Minúsculas, sin tildes, sin espacios. El juego los buscará en:
+Minúsculas, sin tildes, sin espacios. Hay dos lugares:
+
+**Para dibujar** (`docs/arte/referencias/`), en tamaño real:
 
 ```
-src/main/resources/sprites/
-├── heroes/     tyba.png  chie.png  sua.png
-├── enemigos/   anima_en_pena.png  anima_errante.png  candileja.png
-│               patasola.png  madremonte.png  sombreron.png
-│               hombre_caiman.png  mohan.png  madre_de_agua.png
-│               llorona.png  silbon.png  cura_sin_cabeza.png  anima_sola.png
-│               el_dorado.png  fraile.png  alquimista.png
-├── fondos/     paramo.png  selva.png  rio.png  pueblo.png  laguna.png
-└── interfaz/   (íconos, marcos y botón)
+heroes/  enemigos/  fondos/      un cuadro quieto por personaje o etapa
+animaciones/                     una tira por animación: tyba_idle.png, chie_especial.png...
+hoja_personajes.png  hoja_fondos.png
 ```
 
-Con animaciones: `tyba_idle.png`, `tyba_ataque.png`, etc. El archivo sin
-sufijo sigue siendo el cuadro quieto.
+**Lo que carga el juego** (`src/main/resources/sprites/`), ya escalado ×2,
+un archivo por cuadro:
+
+```
+personajes/<nombre>/idle_0.png ... idle_3.png
+                    ataque_0.png ... ataque_4.png
+                    especial_0.png ... especial_5.png   (solo magos y sacerdotes)
+                    dano_0.png  dano_1.png
+                    curado_0.png ... curado_3.png
+                    caida_0.png ... caida_5.png
+                    dormido_0.png                       (pose apagada del prólogo)
+fondos/paramo.png  selva.png  rio.png  pueblo.png  laguna.png   (960 × 320)
+       ofrenda.png  tajo.png                                    (viñetas del prólogo)
+```
+
+Cada cuadro de personaje mide 128 × 192 (el dibujo de 64 × 64 al doble, con
+64 px de aire arriba para los efectos). El Dorado mide 192 × 192. Se pueden
+agregar o quitar cuadros: el juego lee `_0`, `_1`, `_2`... hasta que falte
+uno.
+
+`<nombre>` es el nombre del personaje sin artículo, en minúsculas, sin tildes
+y con guiones bajos: "El Hombre Caimán" → `hombre_caiman`, "El Dorado" →
+`dorado`, "El Fraile de la Codicia" → `fraile_de_la_codicia`.
+
+Los cuadros actuales salen de los bocetos. Para reemplazarlos por dibujos
+propios basta con guardar los PNG nuevos con los mismos nombres.
 
 ## 4. Prompts de referencia
 
