@@ -22,6 +22,45 @@ por el pacto roto. Vencerlos no es matarlos sino apaciguarlos: al caer,
 vuelven al monte, al río o a la niebla. El verdadero enemigo es quien vació la
 laguna.
 
+## Prólogo
+
+Antes de la primera etapa, cinco escenas cuentan la premisa. El jugador las
+pasa con "Siguiente" o las salta, y participa en tres de ellas:
+
+- **La ofrenda:** lanza tres tunjos a la laguna; cada uno salpica y deja el
+  agua más dorada.
+- **El pacto:** toca a cada espanto dormido para escuchar su leyenda.
+- **El último tunjo:** toca a cada héroe; explica cómo pelea (ataque, habilidad
+  especial y recarga de 2 turnos) y lo demuestra con su animación y su sonido.
+
+| # | Escena | Qué se ve | Texto |
+|---|---|---|---|
+| 1 | La ofrenda | Viñeta `ofrenda`: la balsa de oro en la laguna llena, de noche | *Durante siglos, los muiscas entregaron oro a la laguna de Guatavita… No era riqueza. Era un pago.* |
+| 2 | El pacto | Fondo de la selva con cinco espantos dormidos | *Cada tunjo que tocaba el fondo mantenía dormido lo que vive en el monte, en el río y en la noche.* |
+| 3 | El tajo | Viñeta `tajo`: hombres con armadura cavando el borde; el agua escapa | *Entonces llegaron hombres que no ofrecían. Solo tomaban.* |
+| 4 | El despertar | La laguna vacía; los espantos despiertan uno tras otro | *El agua bajó. El pacto se rompió. Y todo lo que dormía despertó.* |
+| 5 | El último tunjo | El páramo con Tyba, Chie y Sua | *Queda un solo tunjo sin entregar… El camino atraviesa todo lo que despertó.* |
+
+La balsa de la ofrenda y el intento de vaciar Guatavita abriendo un corte en
+su borde vienen de la leyenda de El Dorado y de un hecho histórico del siglo
+XVI; conviene verificar los detalles antes de citarlos como datos.
+
+## Práctica entre la niebla
+
+Al terminar el prólogo, Sua levanta con la niebla del páramo dos sombras: la del
+Silbón (90 de vida, 8 de defensa) y la de la Madremonte (40 de vida, cura a su
+compañero). El juego pide seis jugadas, una por turno, explica por qué cada una
+es la mejor y no acepta otra. Se puede saltar.
+
+| Paso | Jugada | Lo que enseña |
+|---|---|---|
+| 1 | Tyba ataca a la Madremonte | Primero el que cura |
+| 2 | Tyba remata a la Madremonte | No dejar enemigos a medias |
+| 3 | Chie usa la Luz de Chía contra el Silbón | La especial ignora la defensa |
+| 4 | Sua cura a Chie | Curar antes de que alguien caiga |
+| 5 | Tyba ataca al Silbón | La especial de Chie está en recarga |
+| 6 | Tyba remata al Silbón | Cerrar la pelea |
+
 ## Los héroes
 
 | Nombre | Clase | Quién es | Su especial |

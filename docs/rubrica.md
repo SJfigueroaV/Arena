@@ -12,14 +12,15 @@ Cada punto se debe poder demostrar en el código o ejecutando el juego.
 - [x] `Mago` implementa `IHabilidadEspecial`: ataque normal débil, especial masivo que ignora la defensa.
 - [x] `Sacerdote` implementa `IHabilidadEspecial` e `ICurable`: su especial cura a un compañero.
 - [x] El controlador llama `atacante.atacar(objetivo)` de forma genérica (`ControladorBatalla.realizarAccion`).
-- [x] **Cero** `instanceof Guerrero / Mago / Sacerdote` en todo el proyecto.
+- [x] **Cero** `instanceof` en todo el proyecto (la especial se detecta con `tieneHabilidadEspecial()`, sobrescrito).
 
 ## 2. Arquitectura MVC
 
 - [x] Ningún archivo de `modelo/` importa `javax.swing` ni `java.awt`.
 - [x] El modelo se puede probar completo con JUnit sin abrir una ventana.
 - [x] Ningún cálculo de daño, curación o victoria en la vista ni dentro de un `ActionListener`.
-- [x] La vista no conoce al controlador ni modifica el modelo.
+- [x] La vista no conoce al controlador ni importa clases del modelo: el controlador pinta las tablas (`setRowCount(0)` + `addRow`).
+- [x] El controlador orquestador recibe el modelo y las tres vistas en su constructor.
 - [x] El controlador sigue los 6 pasos del turno del enunciado.
 - [x] Tras cada acción se actualizan a la vez el historial y las tablas.
 
@@ -35,18 +36,18 @@ Cada punto se debe poder demostrar en el código o ejecutando el juego.
 - [x] `BorderLayout` con panel superior (estado), central (historial) e inferior (controles).
 - [x] Dos `JTable`: héroes a la izquierda, monstruos a la derecha, con HP actualizado.
 - [x] `JTextArea` de solo lectura dentro de `JScrollPane`, con auto-scroll al final.
-- [x] Tres `JComboBox`: quién ataca, a quién ataca, qué acción.
-- [x] Botón rojo grande "EJECUTAR TURNO".
+- [ ] Tres `JComboBox`: quién ataca, a quién ataca, qué acción. **Reemplazados a propósito** por la elección con clics (ver `docs/diseno.md` #32): se toca al héroe, se elige la habilidad en la barra y se toca al objetivo.
+- [ ] Botón rojo grande "EJECUTAR TURNO". **Quitado a propósito**: el turno se ejecuta al tocar al objetivo.
 - [x] Las tablas se repintan sin duplicar filas.
-- [x] Un personaje muerto desaparece de inmediato de tablas y desplegables.
+- [x] Un personaje muerto desaparece de inmediato de las tablas y de la escena.
 - [x] Nunca hay `NullPointerException`: selección vacía, equipo vacío, clic tras terminar la partida.
 - [x] Al terminar la partida se anuncia el resultado y se bloquea el botón.
 - [x] La interfaz se ve alineada y cuidada.
 
 ## Cómo se comprueba
 
-- `./mvnw test` corre 54 pruebas: reglas del modelo, la campaña, partidas
-  completas con la ventana real y dos reglas de arquitectura (modelo sin
-  Swing y sin `instanceof` de clases concretas).
+- `./mvnw test` corre 87 pruebas: reglas del modelo, la campaña, partidas
+  completas con la ventana real y tres reglas de arquitectura (modelo sin
+  Swing, ningún `instanceof` y vista sin clases del modelo).
 - Revisión manual: superar una etapa, pasar a la siguiente, perder una y
   reintentarla.

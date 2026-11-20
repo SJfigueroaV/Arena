@@ -16,6 +16,23 @@ Requiere JDK 21 o superior.
 
 En Windows se abre como proyecto Maven desde NetBeans o IntelliJ.
 
+## Cómo se juega
+
+Todo se puede hacer con el mouse o solo con el teclado.
+
+| Teclado | En la batalla | En el prólogo |
+|---|---|---|
+| 1, 2, 3 | Elegir a Tyba, Chie o Sua | — |
+| Q / E | Ataque normal / habilidad especial | — |
+| ← → | Mover el cursor entre los objetivos | Pasar de un personaje a otro y escucharlo |
+| Enter / Espacio | Confirmar la jugada, o continuar al terminar | Siguiente o lanzar un tunjo |
+| Esc | Cancelar la selección | Saltar el prólogo |
+| R | Reiniciar la campaña o saltar la práctica | — |
+| M | Sonido | Sonido |
+
+Con el mouse: toca a un héroe, elige su habilidad en la barra y toca al
+objetivo marcado.
+
 ## Estructura
 
 ```
