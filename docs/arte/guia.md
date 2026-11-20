@@ -7,6 +7,16 @@ el juego los carga tal cual.
 
 La historia completa de cada personaje está en `docs/lore.md`.
 
+**Arte final:** los personajes y los cinco fondos del juego son los diseños de
+la compañera de equipo (hojas de poses y escenarios en pixel art). Sus hojas
+se recortaron cuadro por cuadro, se llevaron a la medida del juego (cuadros de
+72 × 96 con los pies en la fila 92, El Dorado de 108 × 96) y se armaron las
+animaciones `idle`, `ataque`, `especial` y `caida` con sus poses. Lo que las
+hojas no traen (`dano`, `curado`, `dormido` y algún ataque) se deriva del
+cuadro quieto. Las tiras resultantes están en
+`docs/arte/referencias/animaciones/` y los fondos a 480 × 160 en
+`docs/arte/referencias/fondos/`.
+
 En `docs/arte/referencias/` hay un boceto de cada personaje y de cada fondo,
 dibujados con la paleta y las medidas reales, más dos hojas de contacto
 (`hoja_personajes.png` y `hoja_fondos.png`). Sirven para ver silueta,
