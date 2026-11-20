@@ -14,7 +14,9 @@ Requiere JDK 21 o superior.
 ./mvnw test                # correr las pruebas del modelo
 ```
 
-En Windows se abre como proyecto Maven desde NetBeans o IntelliJ.
+En Windows se usa `mvnw.cmd` en lugar de `./mvnw` (por ejemplo
+`mvnw.cmd compile exec:java`), o se abre como proyecto Maven desde NetBeans o
+IntelliJ.
 
 ## Cómo se juega
 
